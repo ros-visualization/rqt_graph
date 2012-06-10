@@ -31,9 +31,7 @@
 from __future__ import division
 import os
 
-import pydot
-
-from qt_gui.QtBindingHelper import loadUi
+from qt_gui.qt_binding_helper import loadUi
 from QtCore import QEvent, QFile, QIODevice, QObject, QPointF, QRectF, Qt, QTextStream, Signal, QAbstractListModel
 from QtGui import QColor, QFileDialog, QGraphicsScene, QIcon, QImage, QPainter, QWidget, QCompleter
 from QtSvg import QSvgGenerator
@@ -42,14 +40,13 @@ import roslib
 roslib.load_manifest('rqt_graph')
 import rosgraph.impl.graph, rostopic, rosnode, rosservice
 
-from rqt_graph import dotcode
-from rqt_graph.dotcode import RosGraphDotcodeGenerator, NODE_NODE_GRAPH, NODE_TOPIC_ALL_GRAPH, NODE_TOPIC_GRAPH
+from .dotcode import RosGraphDotcodeGenerator, NODE_NODE_GRAPH, NODE_TOPIC_ALL_GRAPH, NODE_TOPIC_GRAPH
 # pydot requires some hacks
 from qt_dotgraph.pydotfactory import PydotFactory
 # TODO: use pygraphviz instead, but non-deterministic layout will first be resolved in graphviz 2.30
 # from qtgui_plugin.pygraphvizfactory import PygraphvizFactory
 
-import rqt_graph.InteractiveGraphicsView
+from .interactive_graphics_view import InteractiveGraphicsView
 
 from qt_dotgraph.dot_to_qt import DotToQtGenerator
 
@@ -111,7 +108,7 @@ class RosGraph(QObject):
         self.dot_to_qt = DotToQtGenerator()
 
         ui_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'RosGraph.ui')
-        loadUi(ui_file, self._widget, {'InteractiveGraphicsView': rqt_graph.InteractiveGraphicsView})
+        loadUi(ui_file, self._widget, {'InteractiveGraphicsView': InteractiveGraphicsView})
         self._widget.setObjectName('RosGraphUi')
         if context.serial_number() > 1:
             self._widget.setWindowTitle(self._widget.windowTitle() + (' (%d)' % context.serial_number()))
