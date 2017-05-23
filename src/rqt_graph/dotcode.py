@@ -516,7 +516,7 @@ class RosGraphDotcodeGenerator:
         if nn_nodes is not None:
             for n in nn_nodes:
                 if (cluster_namespaces_level > 0 and
-                    str(n).count('/') >= 1 and
+                    str(n).count('/') > 1 and
                     len(str(n).split('/')[1]) > 0):
                     namespace = str(n).split('/')[1]
                     if namespace not in namespace_clusters:
