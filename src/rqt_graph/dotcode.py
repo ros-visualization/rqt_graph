@@ -466,10 +466,10 @@ class RosGraphDotcodeGenerator:
                 edges = [e for e in rosgraphinst.nt_all_edges]
 
         if quiet:
-            nn_nodes = filter(self._quiet_filter, nn_nodes)
-            nt_nodes = filter(self._quiet_filter, nt_nodes)
+            nn_nodes = list(filter(self._quiet_filter, nn_nodes))
+            nt_nodes = list(filter(self._quiet_filter, nt_nodes))
             if graph_mode == NODE_NODE_GRAPH:
-                edges = filter(self.quiet_filter_topic_edge, edges)
+                edges = list(filter(self.quiet_filter_topic_edge, edges))
 
         # for accumulating actions topics
         action_nodes = {}
@@ -487,7 +487,7 @@ class RosGraphDotcodeGenerator:
             if accumulate_actions:
                 nt_nodes, edges, action_nodes = self._accumulate_action_topics(nt_nodes, edges, node_connections)
 
-        edges = self._filter_orphaned_edges(edges, list(nn_nodes) + list(nt_nodes))
+        edges = self._filter_orphaned_edges(edges, nn_nodes + nt_nodes)
         nt_nodes = self._filter_orphaned_topics(nt_nodes, edges)
 
         # create the graph
