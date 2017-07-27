@@ -2,6 +2,11 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fixes for Python 3 (`#10 <https://github.com/ros-visualization/rqt_graph/issues/10>`_)
+* only show namespaces if all entities have a common non-empty base path (`#8 <https://github.com/ros-visualization/rqt_graph/issues/8>`_)
+
 0.4.8 (2017-04-24)
 ------------------
 
