@@ -132,9 +132,15 @@
    <item>
     <widget class="QWidget" name="widget" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
       <item>
        <widget class="QWidget" name="widget" native="true">
         <layout class="QHBoxLayout" name="horizontalLayout_4a">
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item>
           <widget class="QLabel">
            <property name="text">
@@ -163,66 +169,6 @@
            </property>
            <property name="text">
             <string>Actions</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="Line" name="line">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="widget" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_4b">
-         <item>
-          <widget class="QLabel">
-           <property name="text">
-            <string>Hide:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="dead_sinks_check_box">
-           <property name="toolTip">
-            <string>Hide topics without subscribers</string>
-           </property>
-           <property name="text">
-            <string>Dead sinks</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="leaf_topics_check_box">
-           <property name="toolTip">
-            <string>Hide topics with one connection only (implicates dead sinks)</string>
-           </property>
-           <property name="text">
-            <string>Leaf topics</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="quiet_check_box">
-           <property name="toolTip">
-            <string>Hide common debugging nodes</string>
-           </property>
-           <property name="text">
-            <string>Debug</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="unreachable_check_box">
-           <property name="toolTip">
-            <string>Hide unreachable nodes</string>
-           </property>
-           <property name="text">
-            <string>Unreachable</string>
            </property>
           </widget>
          </item>
@@ -287,6 +233,87 @@
          </size>
         </property>
        </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QWidget" name="widget" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout_5a" stretch="0,0,0,0,0,0,0,0">
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel">
+           <property name="text">
+            <string>Hide:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="dead_sinks_check_box">
+           <property name="toolTip">
+            <string>Hide topics without subscribers</string>
+           </property>
+           <property name="text">
+            <string>Dead sinks</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="leaf_topics_check_box">
+           <property name="toolTip">
+            <string>Hide topics with one connection only (implicates dead sinks)</string>
+           </property>
+           <property name="text">
+            <string>Leaf topics</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="quiet_check_box">
+           <property name="toolTip">
+            <string>Hide common debugging nodes</string>
+           </property>
+           <property name="text">
+            <string>Debug</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="unreachable_check_box">
+           <property name="toolTip">
+            <string>Hide unreachable nodes</string>
+           </property>
+           <property name="text">
+            <string>Unreachable</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+       </layout>
+       </widget>
       </item>
      </layout>
     </widget>
