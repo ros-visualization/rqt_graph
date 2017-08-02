@@ -182,6 +182,16 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QCheckBox" name="group_image_check_box">
+           <property name="toolTip">
+            <string>Summarize image topics into one virtual topic node (named &lt;image_server&gt;/image_topics)</string>
+           </property>
+           <property name="text">
+            <string>Images</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
