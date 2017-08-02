@@ -259,6 +259,14 @@ class RosGraphDotcodeGenerator:
                                           shape='box',
                                           url="topic:%s" % label)
 
+    def _add_topic_node_group(self, node, dotcode_factory, dotgraph, quiet):
+        label = rosgraph.impl.graph.node_topic(node)
+        dotcode_factory.add_node_to_graph(dotgraph,
+                                          nodename=_conv(node),
+                                          nodelabel=label,
+                                          shape='box3d',
+                                          url='topic:%s' % label)
+
     def _quiet_filter(self, name):
         # ignore viewers
         for n in QUIET_NAMES:
@@ -517,7 +525,6 @@ class RosGraphDotcodeGenerator:
                                              rankdir=orientation)
 
         ACTION_TOPICS_SUFFIX = '/action_topics'
-        
 
         namespace_clusters = self._populate_node_graph(cluster_namespaces_level, (nt_nodes or [])
                                     + [action_prefix + ACTION_TOPICS_SUFFIX for (action_prefix, _) in action_nodes.items()]
@@ -525,7 +532,6 @@ class RosGraphDotcodeGenerator:
                                     dotcode_factory, dotgraph, rank, orientation, simplify)
 
         for n in nt_nodes or []:
-             # cluster topics with same namespace
              # cluster topics with same namespace
              if (cluster_namespaces_level > 0 and
                 n.strip().count('/') > 1 and
@@ -539,6 +545,21 @@ class RosGraphDotcodeGenerator:
                 self._add_topic_node(n, dotcode_factory=dotcode_factory, dotgraph=namespace_clusters[namespace], quiet=quiet)
              else:
                 self._add_topic_node(n, dotcode_factory=dotcode_factory, dotgraph=dotgraph, quiet=quiet)
+
+        for n in [action_prefix + ACTION_TOPICS_SUFFIX for (action_prefix, _) in action_nodes.items()]:
+            # cluster topics with same namespace
+            if (cluster_namespaces_level > 0 and
+                str(n).strip().count('/') > 1 and
+                len(str(n).strip().split('/')[1]) > 0):
+                if (n.strip().count('/') <= cluster_namespaces_level):
+                    namespace = str('/'.join(n.strip().split('/')[:-1]))
+                else:
+                    namespace = '/'.join(n.strip().split('/')[:cluster_namespaces_level+1])
+                if namespace not in namespace_clusters:
+                    print("Namespace '"+namespace+"' not found.")
+                self._add_topic_node_group('n'+n, dotcode_factory=dotcode_factory, dotgraph=namespace_clusters[namespace], quiet=quiet)
+            else:
+                self._add_topic_node_group('n'+n, dotcode_factory=dotcode_factory, dotgraph=dotgraph, quiet=quiet)
 
         # for ROS node, if we have created a namespace clusters for
         # one of its peer topics, drop it into that cluster
