@@ -330,6 +330,16 @@
           </widget>
          </item>
          <item>
+          <widget class="QCheckBox" name="hide_dynamic_reconfigure_check_box">
+           <property name="toolTip">
+            <string>Hide dynamic reconfigure's parameter topics</string>
+           </property>
+           <property name="text">
+            <string>Params</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <spacer name="horizontalSpacer_3">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>

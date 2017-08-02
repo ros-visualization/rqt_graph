@@ -522,14 +522,30 @@ class RosGraphDotcodeGenerator:
                               nodes_in,
                               edges_in,
                               node_connections,
-                              hide_tf_nodes):
-        if not hide_tf_nodes:
+                              hide_tf_nodes,
+                              hide_dynamic_reconfigure):
+        if not hide_tf_nodes and not hide_dynamic_reconfigure:
             return nodes_in, edges_in
         # do not manipulate incoming structures
         nodes = copy.copy(nodes_in)
         edges = copy.copy(edges_in)
         removal_nodes = []
         for n in nodes:
+            if hide_dynamic_reconfigure and str(n).endswith('/parameter_updates'):
+                prefix = str(n)[:-len('/parameter_updates')].strip()
+                dynamic_reconfigure_topic_nodes = []
+                for suffix in ['/parameter_updates', '/parameter_descriptions']:
+                    for n2 in nodes:
+                        if str(n2).strip() == prefix + suffix:
+                            dynamic_reconfigure_topic_nodes.append(n2)
+                if len(dynamic_reconfigure_topic_nodes) == 2:
+                    for n1 in dynamic_reconfigure_topic_nodes:
+                        if n1 in node_connections:
+                            for e in node_connections[n1].outgoing + node_connections[n1].incoming:
+                                if e in edges:
+                                    edges.remove(e)
+                        removal_nodes.append(n1)
+                    continue
             if hide_tf_nodes and str(n).strip() in ['/tf', '/tf_static']:
                 if n in node_connections:
                     for e in node_connections[n].outgoing + node_connections[n].incoming:
@@ -561,7 +577,8 @@ class RosGraphDotcodeGenerator:
                          unreachable=False,
                          group_tf_nodes=False,
                          hide_tf_nodes=False,
-                         group_image_nodes=False):
+                         group_image_nodes=False,
+                         hide_dynamic_reconfigure=False):
         """
         See generate_dotcode
         """
@@ -603,7 +620,7 @@ class RosGraphDotcodeGenerator:
         # for accumulating tf node connections
         tf_connections = None
 
-        if graph_mode != NODE_NODE_GRAPH and (hide_single_connection_topics or hide_dead_end_topics or accumulate_actions or group_tf_nodes or hide_tf_nodes or group_image_nodes):
+        if graph_mode != NODE_NODE_GRAPH and (hide_single_connection_topics or hide_dead_end_topics or accumulate_actions or group_tf_nodes or hide_tf_nodes or group_image_nodes or hide_dynamic_reconfigure):
             # maps outgoing and incoming edges to nodes
             node_connections = self._get_node_edge_map(edges)
 
@@ -616,7 +633,8 @@ class RosGraphDotcodeGenerator:
             nt_nodes, edges = self._filter_hidden_topics(nt_nodes,
                                         edges,
                                         node_connections,
-                                        hide_tf_nodes)
+                                        hide_tf_nodes,
+                                        hide_dynamic_reconfigure)
 
             if accumulate_actions:
                 nt_nodes, edges, action_nodes = self._accumulate_action_topics(nt_nodes, edges, node_connections)
@@ -749,7 +767,8 @@ class RosGraphDotcodeGenerator:
                          unreachable=False,
                          hide_tf_nodes=False,
                          group_tf_nodes=False,
-                         group_image_nodes=False):
+                         group_image_nodes=False,
+                         hide_dynamic_reconfigure=False):
         """
         @param rosgraphinst: RosGraph instance
         @param ns_filter: nodename filter
@@ -786,6 +805,7 @@ class RosGraphDotcodeGenerator:
                          unreachable=unreachable,
                          hide_tf_nodes=hide_tf_nodes,
                          group_tf_nodes=group_tf_nodes,
-                         group_image_nodes=group_image_nodes)
+                         group_image_nodes=group_image_nodes,
+                         hide_dynamic_reconfigure=hide_dynamic_reconfigure)
         dotcode = dotcode_factory.create_dot(dotgraph)
         return dotcode

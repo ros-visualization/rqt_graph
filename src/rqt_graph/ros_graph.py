@@ -195,6 +195,7 @@ class RosGraph(Plugin):
         instance_settings.set_value('group_tf_check_box_state', self._widget.group_tf_check_box.isChecked())
         instance_settings.set_value('hide_tf_nodes_check_box_state', self._widget.hide_tf_nodes_check_box.isChecked())
         instance_settings.set_value('group_image_check_box_state', self._widget.group_image_check_box.isChecked())
+        instance_settings.set_value('hide_dynamic_reconfigure_check_box_state', self._widget.hide_dynamic_reconfigure_check_box.isChecked())
 
     def restore_settings(self, plugin_settings, instance_settings):
         self._widget.graph_type_combo_box.setCurrentIndex(int(instance_settings.value('graph_type_combo_box_index', 0)))
@@ -211,6 +212,7 @@ class RosGraph(Plugin):
         self._widget.hide_tf_nodes_check_box.setChecked(instance_settings.value('hide_tf_nodes_check_box_state', False) in [True, 'true'])
         self._widget.group_tf_check_box.setChecked(instance_settings.value('group_tf_check_box_state', True) in [True, 'true'])
         self._widget.group_image_check_box.setChecked(instance_settings.value('group_image_check_box_state', True) in [True, 'true'])
+        self._widget.hide_dynamic_reconfigure_check_box.setChecked(instance_settings.value('hide_dynamic_reconfigure_check_box_state', True) in [True, 'true'])
         self.initialized = True
         self._refresh_rosgraph()
 
@@ -228,6 +230,7 @@ class RosGraph(Plugin):
         self._widget.group_tf_check_box.setEnabled(True)
         self._widget.hide_tf_nodes_check_box.setEnabled(True)
         self._widget.group_image_check_box.setEnabled(True)
+        self._widget.hide_dynamic_reconfigure_check_box.setEnabled(True)
 
         self._graph = rosgraph.impl.graph.Graph()
         self._graph.set_master_stale(5.0)
@@ -256,6 +259,7 @@ class RosGraph(Plugin):
         group_tf_nodes = self._widget.group_tf_check_box.isChecked()
         hide_tf_nodes = self._widget.hide_tf_nodes_check_box.isChecked()
         group_image_nodes = self._widget.group_image_check_box.isChecked()
+        hide_dynamic_reconfigure = self._widget.hide_dynamic_reconfigure_check_box.isChecked()
 
         return self.dotcode_generator.generate_dotcode(
             rosgraphinst=self._graph,
@@ -272,7 +276,8 @@ class RosGraph(Plugin):
             unreachable=unreachable,
             group_tf_nodes=group_tf_nodes,
             hide_tf_nodes=hide_tf_nodes,
-            group_image_nodes=group_image_nodes)
+            group_image_nodes=group_image_nodes,
+            hide_dynamic_reconfigure=hide_dynamic_reconfigure)
 
     def _update_graph_view(self, dotcode):
         if dotcode == self._current_dotcode:
@@ -344,6 +349,7 @@ class RosGraph(Plugin):
         self._widget.group_tf_check_box.setEnabled(False)
         self._widget.hide_tf_nodes_check_box.setEnabled(False)
         self._widget.group_image_check_box.setEnabled(False)
+        self._widget.hide_dynamic_reconfigure_check_box.setEnabled(False)
 
         self._update_graph_view(dotcode)
 
