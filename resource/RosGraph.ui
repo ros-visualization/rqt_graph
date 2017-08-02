@@ -172,6 +172,16 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QCheckBox" name="group_tf_check_box">
+           <property name="toolTip">
+            <string>Summarize tf and tf2 topics into one virtual topic node (named /tf)</string>
+           </property>
+           <property name="text">
+            <string>tf</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
@@ -286,6 +296,16 @@
            </property>
            <property name="text">
             <string>Debug</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="hide_tf_nodes_check_box">
+           <property name="toolTip">
+            <string>Hide tf nodes</string>
+           </property>
+           <property name="text">
+            <string>tf</string>
            </property>
           </widget>
          </item>

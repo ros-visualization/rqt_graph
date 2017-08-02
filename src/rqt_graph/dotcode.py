@@ -447,6 +447,62 @@ class RosGraphDotcodeGenerator:
                         namespace_clusters[namespace] = dotcode_factory.add_subgraph_to_graph(dotgraph, namespace, rank=rank, rankdir=orientation, simplify=simplify)
         return namespace_clusters
 
+    def _group_tf_nodes(self, nodes_in, edges_in, node_connections):
+        '''takes topic nodes, edges and node connections.
+        Returns topic nodes where tf topics have been removed,
+        edges where the edges to tf topics have been removed, and
+        a map with all the connections to the resulting tf group node'''
+        removal_nodes = []
+        tf_nodes = {}
+        tf_topic_edges_in = set()
+        tf_topic_edges_out = set()
+        # do not manipulate incoming structures
+        nodes = copy.copy(nodes_in)
+        edges = copy.copy(edges_in)
+        for n in nodes:
+            if str(n).strip() in ['/tf', '/tf_static']:
+                tf_topic_edges_in.update([x for x in node_connections[n].incoming if x in edges and x.end in nodes])
+                tf_topic_edges_out.update([x for x in node_connections[n].outgoing if x in edges and x.start in nodes])
+                removal_nodes.append(n)
+
+                for e in tf_topic_edges_out:
+                    if e in edges:
+                        edges.remove(e)
+                for e in tf_topic_edges_in:
+                    if e in edges:
+                        edges.remove(e)
+        for n in removal_nodes:
+            if n in nodes:
+                nodes.remove(n)
+        if len(tf_topic_edges_in) == 0 and len(tf_topic_edges_out) == 0:
+            return nodes, edges, None
+
+        return nodes, edges, {'outgoing': tf_topic_edges_out, 'incoming': tf_topic_edges_in}
+
+    def _filter_hidden_topics(self,
+                              nodes_in,
+                              edges_in,
+                              node_connections,
+                              hide_tf_nodes):
+        if not hide_tf_nodes:
+            return nodes_in, edges_in
+        # do not manipulate incoming structures
+        nodes = copy.copy(nodes_in)
+        edges = copy.copy(edges_in)
+        removal_nodes = []
+        for n in nodes:
+            if hide_tf_nodes and str(n).strip() in ['/tf', '/tf_static']:
+                if n in node_connections:
+                    for e in node_connections[n].outgoing + node_connections[n].incoming:
+                        if e in edges:
+                            edges.remove(e)
+                removal_nodes.append(n)
+                continue
+        for n in removal_nodes:
+            if n in nodes:
+                nodes.remove(n)
+        return nodes, edges
+
     def generate_dotgraph(self,
                          rosgraphinst,
                          ns_filter,
@@ -463,7 +519,9 @@ class RosGraphDotcodeGenerator:
                          rankdir='TB',  # direction of layout (TB top > bottom, LR left > right)
                          simplify=True,  # remove double edges
                          quiet=False,
-                         unreachable=False):
+                         unreachable=False,
+                         group_tf_nodes=False,
+                         hide_tf_nodes=False):
         """
         See generate_dotcode
         """
@@ -500,19 +558,28 @@ class RosGraphDotcodeGenerator:
 
         # for accumulating actions topics
         action_nodes = {}
+        # for accumulating tf node connections
+        tf_connections = None
 
-        if graph_mode != NODE_NODE_GRAPH and (hide_single_connection_topics or hide_dead_end_topics or accumulate_actions):
+        if graph_mode != NODE_NODE_GRAPH and (hide_single_connection_topics or hide_dead_end_topics or accumulate_actions or group_tf_nodes or hide_tf_nodes):
             # maps outgoing and incoming edges to nodes
             node_connections = self._get_node_edge_map(edges)
 
             nt_nodes, edges = self._filter_leaf_topics(nt_nodes,
-                                         edges,
-                                         node_connections,
-                                         hide_single_connection_topics,
-                                         hide_dead_end_topics)
+                                        edges,
+                                        node_connections,
+                                        hide_single_connection_topics,
+                                        hide_dead_end_topics)
+
+            nt_nodes, edges = self._filter_hidden_topics(nt_nodes,
+                                        edges,
+                                        node_connections,
+                                        hide_tf_nodes)
 
             if accumulate_actions:
                 nt_nodes, edges, action_nodes = self._accumulate_action_topics(nt_nodes, edges, node_connections)
+            if group_tf_nodes and not hide_tf_nodes:
+                nt_nodes, edges, tf_connections = self._group_tf_nodes(nt_nodes, edges, node_connections)
 
         edges = self._filter_orphaned_edges(edges, nn_nodes + nt_nodes)
         nt_nodes = self._filter_orphaned_topics(nt_nodes, edges)
@@ -561,6 +628,14 @@ class RosGraphDotcodeGenerator:
             else:
                 self._add_topic_node_group('n'+n, dotcode_factory=dotcode_factory, dotgraph=dotgraph, quiet=quiet)
 
+        if tf_connections != None:
+            # render tf nodes as a single node
+            self._add_topic_node_group('n/tf', dotcode_factory=dotcode_factory, dotgraph=dotgraph, quiet=quiet)
+            for out_edge in tf_connections.get('outgoing', []):
+                dotcode_factory.add_edge_to_graph(dotgraph, _conv('n/tf'), _conv(out_edge.end))
+            for in_edge in tf_connections.get('incoming', []):
+                dotcode_factory.add_edge_to_graph(dotgraph, _conv(in_edge.start), _conv('n/tf'))
+
         # for ROS node, if we have created a namespace clusters for
         # one of its peer topics, drop it into that cluster
         for n in nn_nodes or []:
@@ -605,7 +680,9 @@ class RosGraphDotcodeGenerator:
                          rankdir='TB',  # direction of layout (TB top > bottom, LR left > right)
                          simplify=True,  # remove double edges
                          quiet=False,
-                         unreachable=False):
+                         unreachable=False,
+                         hide_tf_nodes=False,
+                         group_tf_nodes=False):
         """
         @param rosgraphinst: RosGraph instance
         @param ns_filter: nodename filter
@@ -639,6 +716,8 @@ class RosGraphDotcodeGenerator:
                          rankdir=rankdir,
                          simplify=simplify,
                          quiet=quiet,
-                         unreachable=unreachable)
+                         unreachable=unreachable,
+                         hide_tf_nodes=hide_tf_nodes,
+                         group_tf_nodes=group_tf_nodes)
         dotcode = dotcode_factory.create_dot(dotgraph)
         return dotcode
