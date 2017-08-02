@@ -147,7 +147,7 @@ class RosGraph(Plugin):
         self._widget.topic_filter_line_edit.editingFinished.connect(self._refresh_rosgraph)
         self._widget.topic_filter_line_edit.setCompleter(topic_completer)
 
-        self._widget.namespace_cluster_check_box.clicked.connect(self._refresh_rosgraph)
+        self._widget.namespace_cluster_spin_box.valueChanged.connect(self._refresh_rosgraph)
         self._widget.actionlib_check_box.clicked.connect(self._refresh_rosgraph)
         self._widget.dead_sinks_check_box.clicked.connect(self._refresh_rosgraph)
         self._widget.leaf_topics_check_box.clicked.connect(self._refresh_rosgraph)
@@ -181,7 +181,7 @@ class RosGraph(Plugin):
         instance_settings.set_value('graph_type_combo_box_index', self._widget.graph_type_combo_box.currentIndex())
         instance_settings.set_value('filter_line_edit_text', self._widget.filter_line_edit.text())
         instance_settings.set_value('topic_filter_line_edit_text', self._widget.topic_filter_line_edit.text())
-        instance_settings.set_value('namespace_cluster_check_box_state', self._widget.namespace_cluster_check_box.isChecked())
+        instance_settings.set_value('namespace_cluster_spin_box_value', self._widget.namespace_cluster_spin_box.value())
         instance_settings.set_value('actionlib_check_box_state', self._widget.actionlib_check_box.isChecked())
         instance_settings.set_value('dead_sinks_check_box_state', self._widget.dead_sinks_check_box.isChecked())
         instance_settings.set_value('leaf_topics_check_box_state', self._widget.leaf_topics_check_box.isChecked())
@@ -194,7 +194,7 @@ class RosGraph(Plugin):
         self._widget.graph_type_combo_box.setCurrentIndex(int(instance_settings.value('graph_type_combo_box_index', 0)))
         self._widget.filter_line_edit.setText(instance_settings.value('filter_line_edit_text', '/'))
         self._widget.topic_filter_line_edit.setText(instance_settings.value('topic_filter_line_edit_text', '/'))
-        self._widget.namespace_cluster_check_box.setChecked(instance_settings.value('namespace_cluster_check_box_state', True) in [True, 'true'])
+        self._widget.namespace_cluster_spin_box.setValue(int(instance_settings.value('namespace_cluster_spin_box_value', 2)))
         self._widget.actionlib_check_box.setChecked(instance_settings.value('actionlib_check_box_state', True) in [True, 'true'])
         self._widget.dead_sinks_check_box.setChecked(instance_settings.value('dead_sinks_check_box_state', True) in [True, 'true'])
         self._widget.leaf_topics_check_box.setChecked(instance_settings.value('leaf_topics_check_box_state', True) in [True, 'true'])
@@ -210,7 +210,7 @@ class RosGraph(Plugin):
         self._widget.graph_type_combo_box.setEnabled(True)
         self._widget.filter_line_edit.setEnabled(True)
         self._widget.topic_filter_line_edit.setEnabled(True)
-        self._widget.namespace_cluster_check_box.setEnabled(True)
+        self._widget.namespace_cluster_spin_box.setEnabled(True)
         self._widget.actionlib_check_box.setEnabled(True)
         self._widget.dead_sinks_check_box.setEnabled(True)
         self._widget.leaf_topics_check_box.setEnabled(True)
@@ -235,10 +235,7 @@ class RosGraph(Plugin):
         topic_filter = self._widget.topic_filter_line_edit.text()
         graph_mode = self._widget.graph_type_combo_box.itemData(self._widget.graph_type_combo_box.currentIndex())
         orientation = 'LR'
-        if self._widget.namespace_cluster_check_box.isChecked():
-            namespace_cluster = 1
-        else:
-            namespace_cluster = 0
+        namespace_cluster = self._widget.namespace_cluster_spin_box.value()
         accumulate_actions = self._widget.actionlib_check_box.isChecked()
         hide_dead_end_topics = self._widget.dead_sinks_check_box.isChecked()
         hide_single_connection_topics = self._widget.leaf_topics_check_box.isChecked()
@@ -296,13 +293,8 @@ class RosGraph(Plugin):
         # layout graph and create qt items
         (nodes, edges) = self.dot_to_qt.dotcode_to_qt_items(self._current_dotcode,
                                                             highlight_level=highlight_level,
-                                                            same_label_siblings=True)
-
-        for node_item in nodes.values():
-            self._scene.addItem(node_item)
-        for edge_items in edges.values():
-            for edge_item in edge_items:
-                edge_item.add_to_scene(self._scene)
+                                                            same_label_siblings=True,
+                                                            scene=self._scene)
 
         self._scene.setSceneRect(self._scene.itemsBoundingRect())
         if self._widget.auto_fit_graph_check_box.isChecked():

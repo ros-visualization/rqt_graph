@@ -143,13 +143,17 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="namespace_cluster_check_box">
+          <widget class="QSpinBox" name="namespace_cluster_spin_box">
            <property name="toolTip">
-            <string>Show namespace boxes</string>
+            <string>Show namespace boxes, nesting up to this amount</string>
            </property>
-           <property name="text">
-            <string>Namespaces</string>
-           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label">
+            <property name="text">
+              <string>Namespaces</string>
+            </property>
           </widget>
          </item>
          <item>

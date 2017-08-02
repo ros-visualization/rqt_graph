@@ -420,6 +420,25 @@ class RosGraphDotcodeGenerator:
             nodes.remove(n)
         return nodes, edges, action_nodes
 
+    def _populate_node_graph(self, cluster_namespaces_level, node_list, dotcode_factory, dotgraph, rank, orientation, simplify):
+        namespace_clusters = {}
+        if (cluster_namespaces_level > 0):
+            for node in node_list:
+                if (str(node.strip()).count('/') > 2):
+                    for i in range(2, min(2+cluster_namespaces_level, len(node.strip().split('/')))):
+                        namespace = '/'.join(node.strip().split('/')[:i])
+                        parent_namespace = '/'.join(node.strip().split('/')[:i-1])
+                        if namespace not in namespace_clusters:
+                            if parent_namespace == '':
+                                namespace_clusters[namespace] = dotcode_factory.add_subgraph_to_graph(dotgraph, namespace, rank=rank, rankdir=orientation, simplify=simplify)        
+                            elif parent_namespace in namespace_clusters:
+                                namespace_clusters[namespace] = dotcode_factory.add_subgraph_to_graph(namespace_clusters[parent_namespace], namespace, rank=rank, rankdir=orientation, simplify=simplify)
+                elif (str(node.strip()).count('/') == 2):
+                    namespace = '/'.join(node.strip().split('/')[0:2])
+                    if namespace not in namespace_clusters:
+                        namespace_clusters[namespace] = dotcode_factory.add_subgraph_to_graph(dotgraph, namespace, rank=rank, rankdir=orientation, simplify=simplify)
+        return namespace_clusters
+
     def generate_dotgraph(self,
                          rosgraphinst,
                          ns_filter,
@@ -498,41 +517,55 @@ class RosGraphDotcodeGenerator:
                                              rankdir=orientation)
 
         ACTION_TOPICS_SUFFIX = '/action_topics'
-        namespace_clusters = {}
-        for n in (nt_nodes or []) + [action_prefix + ACTION_TOPICS_SUFFIX for (action_prefix, _) in action_nodes.items()]:
-            # cluster topics with same namespace
-            if (cluster_namespaces_level > 0 and
-                str(n).count('/') > 1 and
-                len(str(n).split('/')[1]) > 0):
-                namespace = str(n).split('/')[1]
+        
+
+        namespace_clusters = self._populate_node_graph(cluster_namespaces_level, (nt_nodes or [])
+                                    + [action_prefix + ACTION_TOPICS_SUFFIX for (action_prefix, _) in action_nodes.items()]
+                                    + nn_nodes if nn_nodes is not None else [],
+                                    dotcode_factory, dotgraph, rank, orientation, simplify)
+
+        for n in nt_nodes or []:
+             # cluster topics with same namespace
+             # cluster topics with same namespace
+             if (cluster_namespaces_level > 0 and
+                n.strip().count('/') > 1 and
+                len(n.strip().split('/')[1]) > 0):
+                if (n.count('/') <= cluster_namespaces_level):
+                    namespace = str('/'.join(n.strip().split('/')[:-1]))
+                else:
+                    namespace = '/'.join(n.strip().split('/')[:cluster_namespaces_level+1])
                 if namespace not in namespace_clusters:
-                    namespace_clusters[namespace] = dotcode_factory.add_subgraph_to_graph(dotgraph, namespace, rank=rank, rankdir=orientation, simplify=simplify)
+                    print("Namespace '"+namespace+"' not found.")
                 self._add_topic_node(n, dotcode_factory=dotcode_factory, dotgraph=namespace_clusters[namespace], quiet=quiet)
-            else:
+             else:
                 self._add_topic_node(n, dotcode_factory=dotcode_factory, dotgraph=dotgraph, quiet=quiet)
 
         # for ROS node, if we have created a namespace clusters for
         # one of its peer topics, drop it into that cluster
-        if nn_nodes is not None:
-            for n in nn_nodes:
-                if (cluster_namespaces_level > 0 and
-                    str(n).count('/') > 1 and
-                    len(str(n).split('/')[1]) > 0):
-                    namespace = str(n).split('/')[1]
-                    if namespace not in namespace_clusters:
-                        namespace_clusters[namespace] = dotcode_factory.add_subgraph_to_graph(dotgraph, namespace, rank=rank, rankdir=orientation, simplify=simplify)
-                    self._add_node(n, rosgraphinst=rosgraphinst, dotcode_factory=dotcode_factory, dotgraph=namespace_clusters[namespace], unreachable=unreachable)
+        for n in nn_nodes or []:
+            if (cluster_namespaces_level > 0 and
+                n.strip().count('/') > 1 and
+                len(n.strip().split('/')[1]) > 0):
+                if (n.count('/') <= cluster_namespaces_level):
+                    namespace = str('/'.join(n.strip().split('/')[:-1]))
                 else:
-                    self._add_node(n, rosgraphinst=rosgraphinst, dotcode_factory=dotcode_factory, dotgraph=dotgraph, unreachable=unreachable)
+                    namespace = '/'.join(n.strip().split('/')[:cluster_namespaces_level+1])
+                if namespace not in namespace_clusters:
+                    print("Namespace '"+namespace+"' not found.")
+                self._add_node(n, rosgraphinst=rosgraphinst, dotcode_factory=dotcode_factory, dotgraph=namespace_clusters[namespace], unreachable=unreachable)
+            else:
+                self._add_node(n, rosgraphinst=rosgraphinst, dotcode_factory=dotcode_factory, dotgraph=dotgraph, unreachable=unreachable)
 
         for e in edges:
             self._add_edge(e, dotcode_factory, dotgraph=dotgraph, is_topic=(graph_mode == NODE_NODE_GRAPH))
 
         for (action_prefix, node_connections) in action_nodes.items():
             for out_edge in node_connections.get('outgoing', []):
-                dotcode_factory.add_edge_to_graph(dotgraph, _conv(action_prefix + ACTION_TOPICS_SUFFIX), _conv(out_edge.end))
+                dotcode_factory.add_edge_to_graph(dotgraph, _conv('n'+action_prefix + ACTION_TOPICS_SUFFIX), _conv(out_edge.end))
             for in_edge in node_connections.get('incoming', []):
-                dotcode_factory.add_edge_to_graph(dotgraph, _conv(in_edge.start), _conv(action_prefix + ACTION_TOPICS_SUFFIX))
+                dotcode_factory.add_edge_to_graph(dotgraph, _conv(in_edge.start), _conv('n'+action_prefix + ACTION_TOPICS_SUFFIX))
+        
+
         return dotgraph
 
     def generate_dotcode(self,
