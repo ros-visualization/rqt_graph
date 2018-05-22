@@ -23,7 +23,7 @@
 
   <run_depend version_gte="0.2.19">python_qt_binding</run_depend>
   <run_depend>python-rospkg</run_depend>
-  <run_depend version_gte="0.3.8">qt_dotgraph</run_depend>
+  <run_depend>qt_dotgraph</run_depend>
   <run_depend>rosgraph</run_depend>
   <run_depend>rosgraph_msgs</run_depend>
   <run_depend>roslib</run_depend>
