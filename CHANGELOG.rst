@@ -2,6 +2,10 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add nested subnamespaces and more options to hide or group topics (`#13 <https://github.com/ros-visualization/rqt_graph/issues/13>`_)
+
 0.4.9 (2017-07-27)
 ------------------
 * fixes for Python 3 (`#10 <https://github.com/ros-visualization/rqt_graph/issues/10>`_)
