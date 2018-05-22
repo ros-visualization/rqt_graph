@@ -10,13 +10,13 @@
     <x>0</x>
     <y>0</y>
     <width>1298</width>
-    <height>307</height>
+    <height>344</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Node Graph</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0,0,0,0,0">
      <item>
@@ -132,21 +132,49 @@
    <item>
     <widget class="QWidget" name="widget" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
       <item>
        <widget class="QWidget" name="widget" native="true">
         <layout class="QHBoxLayout" name="horizontalLayout_4a">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item>
-          <widget class="QLabel">
+          <widget class="QLabel" name="label">
            <property name="text">
             <string>Group:</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="namespace_cluster_check_box">
+          <widget class="QSpinBox" name="namespace_cluster_spin_box">
            <property name="toolTip">
-            <string>Show namespace boxes</string>
+            <string>Show namespace boxes, nesting up to this amount</string>
            </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label">
            <property name="text">
             <string>Namespaces</string>
            </property>
@@ -162,63 +190,23 @@
            </property>
           </widget>
          </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="Line" name="line">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="widget" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_4b">
          <item>
-          <widget class="QLabel">
+          <widget class="QCheckBox" name="group_tf_check_box">
+           <property name="toolTip">
+            <string>Summarize tf and tf2 topics into one virtual topic node (named /tf)</string>
+           </property>
            <property name="text">
-            <string>Hide:</string>
+            <string>tf</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="dead_sinks_check_box">
+          <widget class="QCheckBox" name="group_image_check_box">
            <property name="toolTip">
-            <string>Hide topics without subscribers</string>
+            <string>Summarize image topics into one virtual topic node (named &lt;image_server&gt;/image_topics)</string>
            </property>
            <property name="text">
-            <string>Dead sinks</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="leaf_topics_check_box">
-           <property name="toolTip">
-            <string>Hide topics with one connection only (implicates dead sinks)</string>
-           </property>
-           <property name="text">
-            <string>Leaf topics</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="quiet_check_box">
-           <property name="toolTip">
-            <string>Hide common debugging nodes</string>
-           </property>
-           <property name="text">
-            <string>Debug</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="unreachable_check_box">
-           <property name="toolTip">
-            <string>Hide unreachable nodes</string>
-           </property>
-           <property name="text">
-            <string>Unreachable</string>
+            <string>Images</string>
            </property>
           </widget>
          </item>
@@ -283,6 +271,122 @@
          </size>
         </property>
        </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QWidget" name="widget" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout_5a" stretch="0,0,0,0,0,0,0,0">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Hide:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="dead_sinks_check_box">
+           <property name="toolTip">
+            <string>Hide topics without subscribers</string>
+           </property>
+           <property name="text">
+            <string>Dead sinks</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="leaf_topics_check_box">
+           <property name="toolTip">
+            <string>Hide topics with one connection only (implicates dead sinks)</string>
+           </property>
+           <property name="text">
+            <string>Leaf topics</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="quiet_check_box">
+           <property name="toolTip">
+            <string>Hide common debugging nodes</string>
+           </property>
+           <property name="text">
+            <string>Debug</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="hide_tf_nodes_check_box">
+           <property name="toolTip">
+            <string>Hide tf nodes</string>
+           </property>
+           <property name="text">
+            <string>tf</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="unreachable_check_box">
+           <property name="toolTip">
+            <string>Hide unreachable nodes</string>
+           </property>
+           <property name="text">
+            <string>Unreachable</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="hide_dynamic_reconfigure_check_box">
+           <property name="toolTip">
+            <string>Hide dynamic reconfigure's parameter topics</string>
+           </property>
+           <property name="text">
+            <string>Params</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
       </item>
      </layout>
     </widget>
