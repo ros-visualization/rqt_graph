@@ -430,15 +430,15 @@ class RosGraphDotcodeGenerator:
             if str(n).endswith('/feedback'):
                 prefix = str(n)[:-len('/feedback')].strip()
                 action_topic_nodes = []
-                action_topic_edges_out = set()
-                action_topic_edges_in = set()
+                action_topic_edges_out = list()
+                action_topic_edges_in = list()
                 for suffix in ['/status', '/result', '/goal', '/cancel', '/feedback']:
                     for n2 in nodes:
                         if str(n2).strip() == prefix + suffix:
                             action_topic_nodes.append(n2)
                             if n2 in node_connections:
-                                action_topic_edges_out.update(node_connections[n2].outgoing)
-                                action_topic_edges_in.update(node_connections[n2].incoming)
+                                action_topic_edges_out.extend(node_connections[n2].outgoing)
+                                action_topic_edges_in.extend(node_connections[n2].incoming)
                 if len(action_topic_nodes) == 5:
                     # found action
                     removal_nodes.extend(action_topic_nodes)
@@ -503,15 +503,15 @@ class RosGraphDotcodeGenerator:
         edges where the edges to tf topics have been removed, and
         a map with all the connections to the resulting tf group node'''
         removal_nodes = []
-        tf_topic_edges_in = set()
-        tf_topic_edges_out = set()
+        tf_topic_edges_in = list()
+        tf_topic_edges_out = list()
         # do not manipulate incoming structures
         nodes = copy.copy(nodes_in)
         edges = copy.copy(edges_in)
         for n in nodes:
             if str(n).strip() in ['/tf', '/tf_static']:
-                tf_topic_edges_in.update([x for x in node_connections[n].incoming if x in edges and x.end in nodes])
-                tf_topic_edges_out.update([x for x in node_connections[n].outgoing if x in edges and x.start in nodes])
+                tf_topic_edges_in.extend([x for x in node_connections[n].incoming if x in edges and x.end in nodes])
+                tf_topic_edges_out.extend([x for x in node_connections[n].outgoing if x in edges and x.start in nodes])
                 removal_nodes.append(n)
 
                 for e in tf_topic_edges_out:
@@ -542,15 +542,15 @@ class RosGraphDotcodeGenerator:
             if str(n).endswith('/compressed'):
                 prefix = str(n)[:-len('/compressed')].strip()
                 image_topic_nodes = []
-                image_topic_edges_out = set()
-                image_topic_edges_in = set()
+                image_topic_edges_out = list()
+                image_topic_edges_in = list()
                 for suffix in ['/compressed', '/compressedDepth', '/theora', '']:
                     for n2 in nodes:
                         if str(n2).strip() == prefix + suffix:
                             image_topic_nodes.append(n2)
                             if n2 in node_connections:
-                                image_topic_edges_out.update(node_connections[n2].outgoing)
-                                image_topic_edges_in.update(node_connections[n2].incoming)
+                                image_topic_edges_out.extend(node_connections[n2].outgoing)
+                                image_topic_edges_in.extend(node_connections[n2].incoming)
                 if len(image_topic_nodes) >= 3:
                     # found action
                     removal_nodes.extend(image_topic_nodes)
