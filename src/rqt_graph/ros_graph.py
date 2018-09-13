@@ -60,13 +60,13 @@ class RepeatedWordCompleter(QCompleter):
 
     def pathFromIndex(self, index):
         path = QCompleter.pathFromIndex(self, index)
-        lst = str(self.widget().text()).split(',')
+        lst = unicode(self.widget().text()).split(',')
         if len(lst) > 1:
             path = '%s, %s' % (','.join(lst[:-1]), path)
         return path
 
     def splitPath(self, path):
-        path = str(path.split(',')[-1]).lstrip(' ')
+        path = unicode(path.split(',')[-1]).lstrip(' ')
         return [path]
 
 
@@ -79,8 +79,8 @@ class NamespaceCompletionModel(QAbstractListModel):
     def refresh(self, names):
         namesset = set()
         for n in names:
-            namesset.add(str(n).strip())
-            namesset.add("-%s" % (str(n).strip()))
+            namesset.add(unicode(n).strip())
+            namesset.add("-%s" % (unicode(n).strip()))
         self.names = sorted(namesset)
 
     def rowCount(self, parent):
