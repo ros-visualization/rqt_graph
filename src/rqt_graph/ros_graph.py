@@ -29,6 +29,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from __future__ import division
+from builtins import str
 import os
 import rospkg
 
