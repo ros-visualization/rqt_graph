@@ -32,6 +32,8 @@
 
 # this is a modified version of rx/rxgraph/src/rxgraph/dotcode.py
 
+from builtins import str
+
 import re
 import copy
 
