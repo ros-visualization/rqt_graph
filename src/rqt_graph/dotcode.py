@@ -42,6 +42,13 @@ import math
 import rospy
 import pydot
 
+try:
+    unicode
+    # we're on python2, or the "unicode" function has already been defined elsewhere
+except NameError:
+    unicode = str
+    # we're on python3
+
 # node/node connectivity
 NODE_NODE_GRAPH = 'node_node'
 # node/topic connections where an actual network connection exists

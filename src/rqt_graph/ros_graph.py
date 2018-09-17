@@ -52,6 +52,12 @@ from rqt_gui_py.plugin import Plugin
 from .dotcode import RosGraphDotcodeGenerator, NODE_NODE_GRAPH, NODE_TOPIC_ALL_GRAPH, NODE_TOPIC_GRAPH
 from .interactive_graphics_view import InteractiveGraphicsView
 
+try:
+    unicode
+    # we're on python2, or the "unicode" function has already been defined elsewhere
+except NameError:
+    unicode = str
+    # we're on python3
 
 class RepeatedWordCompleter(QCompleter):
     """A completer that completes multiple times from a list"""
