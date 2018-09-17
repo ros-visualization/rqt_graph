@@ -52,6 +52,12 @@ from rqt_gui_py.plugin import Plugin
 from .dotcode import RosGraphDotcodeGenerator, NODE_NODE_GRAPH, NODE_TOPIC_ALL_GRAPH, NODE_TOPIC_GRAPH
 from .interactive_graphics_view import InteractiveGraphicsView
 
+try:
+    unicode
+    # we're on python2, or the "unicode" function has already been defined elsewhere
+except NameError:
+    unicode = str
+    # we're on python3
 
 class RepeatedWordCompleter(QCompleter):
     """A completer that completes multiple times from a list"""
@@ -60,13 +66,13 @@ class RepeatedWordCompleter(QCompleter):
 
     def pathFromIndex(self, index):
         path = QCompleter.pathFromIndex(self, index)
-        lst = str(self.widget().text()).split(',')
+        lst = unicode(self.widget().text()).split(',')
         if len(lst) > 1:
             path = '%s, %s' % (','.join(lst[:-1]), path)
         return path
 
     def splitPath(self, path):
-        path = str(path.split(',')[-1]).lstrip(' ')
+        path = unicode(path.split(',')[-1]).lstrip(' ')
         return [path]
 
 
@@ -79,8 +85,8 @@ class NamespaceCompletionModel(QAbstractListModel):
     def refresh(self, names):
         namesset = set()
         for n in names:
-            namesset.add(str(n).strip())
-            namesset.add("-%s" % (str(n).strip()))
+            namesset.add(unicode(n).strip())
+            namesset.add("-%s" % (unicode(n).strip()))
         self.names = sorted(namesset)
 
     def rowCount(self, parent):

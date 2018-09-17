@@ -42,6 +42,13 @@ import math
 import rospy
 import pydot
 
+try:
+    unicode
+    # we're on python2, or the "unicode" function has already been defined elsewhere
+except NameError:
+    unicode = str
+    # we're on python3
+
 # node/node connectivity
 NODE_NODE_GRAPH = 'node_node'
 # node/topic connections where an actual network connection exists
@@ -64,10 +71,10 @@ def matches_any(name, patternlist):
     if patternlist is None or len(patternlist) == 0:
         return False
     for pattern in patternlist:
-        if str(name).strip() == pattern:
+        if unicode(name).strip() == pattern:
             return True
         if re.match("^[a-zA-Z0-9_/]+$", pattern) is None:
-            if re.match(str(pattern), name.strip()) is not None:
+            if re.match(unicode(pattern), name.strip()) is not None:
                 return True
     return False
 
@@ -178,7 +185,7 @@ class RosGraphDotcodeGenerator:
             else:
                 penwidth = self._calc_edge_penwidth(sub,topic)
                 color = self._calc_edge_color(sub,topic)
-                label = "(" + str(conns) + " connections)"
+                label = "(" + unicode(conns) + " connections)"
                 return [label, penwidth, color]
 
         if sub in self.edges and topic in self.edges[sub] and pub in self.edges[sub][topic]:
@@ -186,13 +193,13 @@ class RosGraphDotcodeGenerator:
             color = self._calc_edge_color(sub,topic,pub)
             period = self.edges[sub][topic][pub].period_mean.to_sec()
             if period > 0.0:
-                freq = str(round(1.0 / period, 1))
+                freq = unicode(round(1.0 / period, 1))
             else:
                 freq = "?"
             age = self.edges[sub][topic][pub].stamp_age_mean.to_sec()
             age_string = ""
             if age > 0.0:
-                age_string = " // " + str(round(age, 2) * 1000) + " ms"
+                age_string = " // " + unicode(round(age, 2) * 1000) + " ms"
             label = freq + " Hz" + age_string
             return [label, penwidth, color]
         else:
@@ -334,7 +341,7 @@ class RosGraphDotcodeGenerator:
         return list(set(namespaces))
 
     def _filter_orphaned_edges(self, edges, nodes):
-        nodenames = [str(n).strip() for n in nodes]
+        nodenames = [unicode(n).strip() for n in nodes]
         # currently using and rule as the or rule generates orphan nodes with the current logic
         return [e for e in edges if e.start.strip() in nodenames and e.end.strip() in nodenames]
 
@@ -344,7 +351,7 @@ class RosGraphDotcodeGenerator:
         for n in nt_nodes:
             keep = False
             for e in edges:
-                if e.start.strip() == str(n).strip() or e.end.strip() == str(n).strip():
+                if e.start.strip() == unicode(n).strip() or e.end.strip() == unicode(n).strip():
                     keep = True
                     break
             if not keep:
@@ -427,14 +434,14 @@ class RosGraphDotcodeGenerator:
         nodes = copy.copy(nodes_in)
         edges = copy.copy(edges_in)
         for n in nodes:
-            if str(n).endswith('/feedback'):
-                prefix = str(n)[:-len('/feedback')].strip()
+            if unicode(n).endswith('/feedback'):
+                prefix = unicode(n)[:-len('/feedback')].strip()
                 action_topic_nodes = []
                 action_topic_edges_out = list()
                 action_topic_edges_in = list()
                 for suffix in ['/status', '/result', '/goal', '/cancel', '/feedback']:
                     for n2 in nodes:
-                        if str(n2).strip() == prefix + suffix:
+                        if unicode(n2).strip() == prefix + suffix:
                             action_topic_nodes.append(n2)
                             if n2 in node_connections:
                                 action_topic_edges_out.extend(node_connections[n2].outgoing)
@@ -467,7 +474,7 @@ class RosGraphDotcodeGenerator:
         namespace_clusters = {}
         if cluster_namespaces_level > 0:
             for node in node_list:
-                if str(node.strip()).count('/') > 2:
+                if unicode(node.strip()).count('/') > 2:
                     for i in range(2, min(2 + cluster_namespaces_level, len(node.strip().split('/')))):
                         namespace = '/'.join(node.strip().split('/')[:i])
                         parent_namespace = '/'.join(node.strip().split('/')[:i - 1])
@@ -486,7 +493,7 @@ class RosGraphDotcodeGenerator:
                                     rank=rank,
                                     rankdir=orientation,
                                     simplify=simplify)
-                elif str(node.strip()).count('/') == 2:
+                elif unicode(node.strip()).count('/') == 2:
                     namespace = '/'.join(node.strip().split('/')[0:2])
                     if namespace not in namespace_clusters:
                         namespace_clusters[namespace] = dotcode_factory.add_subgraph_to_graph(
@@ -509,7 +516,7 @@ class RosGraphDotcodeGenerator:
         nodes = copy.copy(nodes_in)
         edges = copy.copy(edges_in)
         for n in nodes:
-            if str(n).strip() in ['/tf', '/tf_static']:
+            if unicode(n).strip() in ['/tf', '/tf_static']:
                 tf_topic_edges_in.extend([x for x in node_connections[n].incoming if x in edges and x.end in nodes])
                 tf_topic_edges_out.extend([x for x in node_connections[n].outgoing if x in edges and x.start in nodes])
                 removal_nodes.append(n)
@@ -539,14 +546,14 @@ class RosGraphDotcodeGenerator:
         nodes = copy.copy(nodes_in)
         edges = copy.copy(edges_in)
         for n in nodes:
-            if str(n).endswith('/compressed'):
-                prefix = str(n)[:-len('/compressed')].strip()
+            if unicode(n).endswith('/compressed'):
+                prefix = unicode(n)[:-len('/compressed')].strip()
                 image_topic_nodes = []
                 image_topic_edges_out = list()
                 image_topic_edges_in = list()
                 for suffix in ['/compressed', '/compressedDepth', '/theora', '']:
                     for n2 in nodes:
-                        if str(n2).strip() == prefix + suffix:
+                        if unicode(n2).strip() == prefix + suffix:
                             image_topic_nodes.append(n2)
                             if n2 in node_connections:
                                 image_topic_edges_out.extend(node_connections[n2].outgoing)
@@ -581,12 +588,12 @@ class RosGraphDotcodeGenerator:
         edges = copy.copy(edges_in)
         removal_nodes = []
         for n in nodes:
-            if hide_dynamic_reconfigure and str(n).endswith('/parameter_updates'):
-                prefix = str(n)[:-len('/parameter_updates')].strip()
+            if hide_dynamic_reconfigure and unicode(n).endswith('/parameter_updates'):
+                prefix = unicode(n)[:-len('/parameter_updates')].strip()
                 dynamic_reconfigure_topic_nodes = []
                 for suffix in ['/parameter_updates', '/parameter_descriptions']:
                     for n2 in nodes:
-                        if str(n2).strip() == prefix + suffix:
+                        if unicode(n2).strip() == prefix + suffix:
                             dynamic_reconfigure_topic_nodes.append(n2)
                 if len(dynamic_reconfigure_topic_nodes) == 2:
                     for n1 in dynamic_reconfigure_topic_nodes:
@@ -596,7 +603,7 @@ class RosGraphDotcodeGenerator:
                                     edges.remove(e)
                         removal_nodes.append(n1)
                     continue
-            if hide_tf_nodes and str(n).strip() in ['/tf', '/tf_static']:
+            if hide_tf_nodes and unicode(n).strip() in ['/tf', '/tf_static']:
                 if n in node_connections:
                     for e in node_connections[n].outgoing + node_connections[n].incoming:
                         if e in edges:
@@ -728,10 +735,10 @@ class RosGraphDotcodeGenerator:
         for n in nt_nodes or []:
              # cluster topics with same namespace
              if cluster_namespaces_level > 0 and \
-                    str(n).strip().count('/') > 1 and \
+                    unicode(n).strip().count('/') > 1 and \
                     len(n.strip().split('/')[1]) > 0:
                 if n.count('/') <= cluster_namespaces_level:
-                    namespace = str('/'.join(n.strip().split('/')[:-1]))
+                    namespace = unicode('/'.join(n.strip().split('/')[:-1]))
                 else:
                     namespace = '/'.join(n.strip().split('/')[:cluster_namespaces_level + 1])
                 self._add_topic_node(n, dotcode_factory=dotcode_factory, dotgraph=namespace_clusters[namespace], quiet=quiet)
@@ -742,10 +749,10 @@ class RosGraphDotcodeGenerator:
                 [image_prefix + IMAGE_TOPICS_SUFFIX for (image_prefix, _) in image_nodes.items()]:
             # cluster topics with same namespace
             if cluster_namespaces_level > 0 and \
-                    str(n).strip().count('/') > 1 and \
-                    len(str(n).strip().split('/')[1]) > 0:
+                    unicode(n).strip().count('/') > 1 and \
+                    len(unicode(n).strip().split('/')[1]) > 0:
                 if n.strip().count('/') <= cluster_namespaces_level:
-                    namespace = str('/'.join(n.strip().split('/')[:-1]))
+                    namespace = unicode('/'.join(n.strip().split('/')[:-1]))
                 else:
                     namespace = '/'.join(n.strip().split('/')[:cluster_namespaces_level + 1])
                 self._add_topic_node_group('n' + n, dotcode_factory=dotcode_factory, dotgraph=namespace_clusters[namespace], quiet=quiet)
@@ -767,7 +774,7 @@ class RosGraphDotcodeGenerator:
                     n.strip().count('/') > 1 and \
                     len(n.strip().split('/')[1]) > 0:
                 if n.count('/') <= cluster_namespaces_level:
-                    namespace = str('/'.join(n.strip().split('/')[:-1]))
+                    namespace = unicode('/'.join(n.strip().split('/')[:-1]))
                 else:
                     namespace = '/'.join(n.strip().split('/')[:cluster_namespaces_level + 1])
                 self._add_node(
