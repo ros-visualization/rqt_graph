@@ -77,7 +77,8 @@ class InteractiveGraphicsView(QGraphicsView):
 
             mouse_after_scale_in_scene = self.mapToScene(wheel_event.pos())
             center_in_scene = self.mapToScene(self.frameRect().center())
-            self.centerOn(center_in_scene + mouse_before_scale_in_scene - mouse_after_scale_in_scene)
+            self.centerOn(
+                center_in_scene + mouse_before_scale_in_scene - mouse_after_scale_in_scene)
 
             wheel_event.accept()
         else:

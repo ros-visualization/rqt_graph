@@ -37,7 +37,8 @@ import rospkg
 import os
 from rqt_graph.dotcode import RosGraphDotcodeGenerator
 
-PKG='rqt_graph'
+PKG = 'rqt_graph'
+
 
 class DotcodeTest(unittest.TestCase):
 
@@ -49,7 +50,6 @@ class DotcodeTest(unittest.TestCase):
         inc, exc = gen._split_filter_string('/')
         self.assertEqual(['.*'], inc)
         self.assertEqual(0, len(exc))
-
 
     def test_split_filter_includes(self):
         gen = RosGraphDotcodeGenerator()
@@ -76,6 +76,7 @@ class DotcodeTest(unittest.TestCase):
         self.assertEqual(['foo', 'bam'], exc)
 
     class MockEdge():
+
         def __init__(self, start, end):
             self.start = start
             self.end = end
@@ -92,7 +93,7 @@ class DotcodeTest(unittest.TestCase):
         self.assertEqual([e1], nmap['bar'].incoming)
         self.assertEqual([], nmap['bar'].outgoing)
 
-    def test_get_node_edge_map(self):
+    def test_get_node_edge_map2(self):
         gen = RosGraphDotcodeGenerator()
         e1 = self.MockEdge('foo', 'bar')
         e2 = self.MockEdge('bar', 'foo')
@@ -119,12 +120,14 @@ class DotcodeTest(unittest.TestCase):
         edges = [e1, e2, e3, e4, e5, e6]
         node_connections = gen._get_node_edge_map(edges)
         print(node_connections)
+        hide_single_connection_topics = True
+        hide_dead_end_topics = False
         rnodes, redges = gen._filter_leaf_topics(topic_nodes,
-                                edges,
-                                node_connections,
-                                True, #hide_single_connection_topics,
-                                False #hide_dead_end_topics
-                                )
+                                                 edges,
+                                                 node_connections,
+                                                 hide_single_connection_topics,
+                                                 hide_dead_end_topics
+                                                 )
         self.assertEqual(['foo', 'bar'], rnodes)
         self.assertEqual([e1, e2, e3, e4], redges)
         self.assertEqual(['foo', 'bar', 'pam', 'boo'], topic_nodes)
@@ -142,17 +145,18 @@ class DotcodeTest(unittest.TestCase):
         edges = [e1, e2, e3, e4, e5, e6]
         node_connections = gen._get_node_edge_map(edges)
         print(node_connections)
+        hide_single_connection_topics = False
+        hide_dead_end_topics = True
         rnodes, redges = gen._filter_leaf_topics(topic_nodes,
-                                edges,
-                                node_connections,
-                                False, #hide_single_connection_topics,
-                                True #hide_dead_end_topics
-                                )
+                                                 edges,
+                                                 node_connections,
+                                                 hide_single_connection_topics,
+                                                 hide_dead_end_topics
+                                                 )
         self.assertEqual(['bar', 'boo'], rnodes)
         self.assertEqual([e3, e4, e6], redges)
         self.assertEqual(['foo', 'bar', 'pam', 'boo'], topic_nodes)
         self.assertEqual([e1, e2, e3, e4, e5, e6], edges)
-
 
     def test_filter_leaf_topics_both(self):
         gen = RosGraphDotcodeGenerator()
@@ -166,12 +170,14 @@ class DotcodeTest(unittest.TestCase):
         edges = [e1, e2, e3, e4, e5, e6]
         node_connections = gen._get_node_edge_map(edges)
         print(node_connections)
+        hide_single_connection_topics = True
+        hide_dead_end_topics = True
         rnodes, redges = gen._filter_leaf_topics(topic_nodes,
-                                edges,
-                                node_connections,
-                                True, #hide_single_connection_topics,
-                                True #hide_dead_end_topics
-                                )
+                                                 edges,
+                                                 node_connections,
+                                                 hide_single_connection_topics,
+                                                 hide_dead_end_topics
+                                                 )
         self.assertEqual(['bar'], rnodes)
         self.assertEqual([e3, e4], redges)
         self.assertEqual(['foo', 'bar', 'pam', 'boo'], topic_nodes)
@@ -188,11 +194,13 @@ class DotcodeTest(unittest.TestCase):
         e6 = self.MockEdge('n2', 'bar')
         edges = [e1, e2, e3, e4, e5, e6]
         node_connections = gen._get_node_edge_map(edges)
-        rnodes, redges, raction_nodes = gen._accumulate_action_topics(topic_nodes, edges, node_connections)
-        self.assertEqual(1, len(rnodes)) # node 'bar'
+        rnodes, redges, raction_nodes = gen._accumulate_action_topics(
+            topic_nodes, edges, node_connections)
+        self.assertEqual(1, len(rnodes))  # node 'bar'
         self.assertEqual(1, len(redges))
         self.assertEqual(1, len(raction_nodes))
-        self.assertEqual(['foo/feedback', 'foo/goal', 'foo/cancel', 'foo/result', 'foo/status', 'bar'], topic_nodes)
+        self.assertEqual(
+            ['foo/feedback', 'foo/goal', 'foo/cancel', 'foo/result', 'foo/status', 'bar'], topic_nodes)
         self.assertEqual([e1, e2, e3, e4, e5, e6], edges)
 
 

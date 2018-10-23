@@ -60,12 +60,14 @@ QUIET_NAMES = ['/diag_agg', '/runtime_logger', '/pr2_dashboard', '/rviz',
                '/rosout', '/cpu_monitor', '/monitor', '/hd_monitor',
                '/rxloggerlevel', '/clock', '/rqt', '/statistics']
 
+
 def _conv(n):
     """Convert a node name to a valid dot name, which can't contain the leading space"""
     if n.startswith(' '):
         return 't_' + n[1:]
     else:
         return 'n_' + n
+
 
 def matches_any(name, patternlist):
     if patternlist is None or len(patternlist) == 0:
@@ -80,6 +82,7 @@ def matches_any(name, patternlist):
 
 
 class NodeConnections:
+
     def __init__(self, incoming=None, outgoing=None):
         self.incoming = incoming or []
         self.outgoing = outgoing or []
@@ -96,35 +99,36 @@ class RosGraphDotcodeGenerator:
     def __init__(self):
         try:
             from rosgraph_msgs.msg import TopicStatistics
-            self.stats_sub = rospy.Subscriber('/statistics', TopicStatistics, self.statistics_callback)
+            self.stats_sub = rospy.Subscriber(
+                '/statistics', TopicStatistics, self.statistics_callback)
         except ImportError:
             # not supported before Indigo
             pass
 
-    def statistics_callback(self,msg):
+    def statistics_callback(self, msg):
 
         # add connections (if new)
-        if not msg.node_sub in self.edges:
+        if msg.node_sub not in self.edges:
             self.edges[msg.node_sub] = dict([])
 
-        if not msg.topic in self.edges[msg.node_sub]:
+        if msg.topic not in self.edges[msg.node_sub]:
             self.edges[msg.node_sub][msg.topic] = dict([])
 
         self.edges[msg.node_sub][msg.topic][msg.node_pub] = msg
 
     def _get_max_traffic(self):
-        traffic = 10000 # start at 10kb
+        traffic = 10000  # start at 10kb
         for sub in self.edges:
             for topic in self.edges[sub]:
-               for pub in self.edges[sub][topic]:
+                for pub in self.edges[sub][topic]:
                     traffic = max(traffic, self.edges[sub][topic][pub].traffic)
         return traffic
 
     def _get_max_age(self):
-        age = 0.1 # start at 100ms
+        age = 0.1  # start at 100ms
         for sub in self.edges:
             for topic in self.edges[sub]:
-               for pub in self.edges[sub][topic]:
+                for pub in self.edges[sub][topic]:
                     age = max(age, self.edges[sub][topic][pub].stamp_age_mean.to_sec())
         return age
 
@@ -183,14 +187,14 @@ class RosGraphDotcodeGenerator:
             if conns == 1:
                 pub = next(iter(self.edges[sub][topic].keys()))
             else:
-                penwidth = self._calc_edge_penwidth(sub,topic)
-                color = self._calc_edge_color(sub,topic)
+                penwidth = self._calc_edge_penwidth(sub, topic)
+                color = self._calc_edge_color(sub, topic)
                 label = "(" + unicode(conns) + " connections)"
                 return [label, penwidth, color]
 
         if sub in self.edges and topic in self.edges[sub] and pub in self.edges[sub][topic]:
-            penwidth = self._calc_edge_penwidth(sub,topic,pub)
-            color = self._calc_edge_color(sub,topic,pub)
+            penwidth = self._calc_edge_penwidth(sub, topic, pub)
+            color = self._calc_edge_color(sub, topic, pub)
             period = self.edges[sub][topic][pub].period_mean.to_sec()
             if period > 0.0:
                 freq = unicode(round(1.0 / period, 1))
@@ -242,8 +246,8 @@ class RosGraphDotcodeGenerator:
                     penwidth=penwidth,
                     color=color)
             else:
-                dotcode_factory.add_edge_to_graph(dotgraph, _conv(edge.start), _conv(edge.end), label=edge.label)
-
+                dotcode_factory.add_edge_to_graph(
+                    dotgraph, _conv(edge.start), _conv(edge.end), label=edge.label)
 
     def _add_node(self, node, rosgraphinst, dotcode_factory, dotgraph, unreachable):
         if node in rosgraphinst.bad_nodes:
@@ -321,7 +325,7 @@ class RosGraphDotcodeGenerator:
         if graph_mode == NODE_NODE_GRAPH:
             nodes = graph.nn_nodes
             if quiet:
-                nodes = [n for n in nodes if not n in QUIET_NAMES]
+                nodes = [n for n in nodes if n not in QUIET_NAMES]
             namespaces = list(set([roslib.names.namespace(n) for n in nodes]))
 
         elif graph_mode == NODE_TOPIC_GRAPH or \
@@ -329,8 +333,8 @@ class RosGraphDotcodeGenerator:
             nn_nodes = graph.nn_nodes
             nt_nodes = graph.nt_nodes
             if quiet:
-                nn_nodes = [n for n in nn_nodes if not n in QUIET_NAMES]
-                nt_nodes = [n for n in nt_nodes if not n in QUIET_NAMES]
+                nn_nodes = [n for n in nn_nodes if n not in QUIET_NAMES]
+                nt_nodes = [n for n in nt_nodes if n not in QUIET_NAMES]
             if nn_nodes or nt_nodes:
                 namespaces = [roslib.names.namespace(n) for n in nn_nodes]
             # an annoyance with the rosgraph library is that it
@@ -375,28 +379,31 @@ class RosGraphDotcodeGenerator:
         return includes, excludes
 
     def _get_node_edge_map(self, edges):
-        '''returns a dict mapping node name to edge objects partitioned in incoming and outgoing edges'''
+        '''
+        returns a dict mapping node name to edge objects partitioned in incoming and outgoing edges
+        '''
         node_connections = {}
         for edge in edges:
-            if not edge.start in node_connections:
+            if edge.start not in node_connections:
                 node_connections[edge.start] = NodeConnections()
-            if not edge.end in node_connections:
+            if edge.end not in node_connections:
                 node_connections[edge.end] = NodeConnections()
             node_connections[edge.start].outgoing.append(edge)
             node_connections[edge.end].incoming.append(edge)
         return node_connections
 
     def _filter_leaf_topics(
-        self,
-        nodes_in,
-        edges_in,
-        node_connections,
-        hide_single_connection_topics,
-        hide_dead_end_topics):
+            self,
+            nodes_in,
+            edges_in,
+            node_connections,
+            hide_single_connection_topics,
+            hide_dead_end_topics):
         '''
         removes certain ending topic nodes and their edges from list of nodes and edges
 
-        @param hide_single_connection_topics: if true removes topics that are only published/subscribed by one node
+        @param hide_single_connection_topics:
+            if true removes topics that are only published/subscribed by one node
         @param hide_dead_end_topics: if true removes topics having only publishers
         '''
         if not hide_dead_end_topics and not hide_single_connection_topics:
@@ -414,7 +421,7 @@ class RosGraphDotcodeGenerator:
                     has_out_edges = True
                 node_edges.extend(node_connections[n].incoming)
                 if (hide_single_connection_topics and len(node_edges) < 2) or \
-                    (hide_dead_end_topics and not has_out_edges):
+                        (hide_dead_end_topics and not has_out_edges):
                     removal_nodes.append(n)
                     for e in node_edges:
                         if e in edges:
@@ -463,36 +470,39 @@ class RosGraphDotcodeGenerator:
         return nodes, edges, action_nodes
 
     def _populate_node_graph(
-        self, 
-        cluster_namespaces_level, 
-        node_list, 
-        dotcode_factory, 
-        dotgraph, 
-        rank, 
-        orientation, 
-        simplify):
+            self,
+            cluster_namespaces_level,
+            node_list,
+            dotcode_factory,
+            dotgraph,
+            rank,
+            orientation,
+            simplify):
         namespace_clusters = {}
         if cluster_namespaces_level > 0:
             for node in node_list:
                 if unicode(node.strip()).count('/') > 2:
-                    for i in range(2, min(2 + cluster_namespaces_level, len(node.strip().split('/')))):
+                    for i in range(
+                            2, min(2 + cluster_namespaces_level, len(node.strip().split('/')))):
                         namespace = '/'.join(node.strip().split('/')[:i])
                         parent_namespace = '/'.join(node.strip().split('/')[:i - 1])
                         if namespace not in namespace_clusters:
                             if parent_namespace == '':
-                                namespace_clusters[namespace] = dotcode_factory.add_subgraph_to_graph(
-                                    dotgraph,
-                                    namespace,
-                                    rank=rank,
-                                    rankdir=orientation,
-                                    simplify=simplify)
+                                namespace_clusters[namespace] = \
+                                    dotcode_factory.add_subgraph_to_graph(
+                                        dotgraph,
+                                        namespace,
+                                        rank=rank,
+                                        rankdir=orientation,
+                                        simplify=simplify)
                             elif parent_namespace in namespace_clusters:
-                                namespace_clusters[namespace] = dotcode_factory.add_subgraph_to_graph(
-                                    namespace_clusters[parent_namespace],
-                                    namespace,
-                                    rank=rank,
-                                    rankdir=orientation,
-                                    simplify=simplify)
+                                namespace_clusters[namespace] = \
+                                    dotcode_factory.add_subgraph_to_graph(
+                                        namespace_clusters[parent_namespace],
+                                        namespace,
+                                        rank=rank,
+                                        rankdir=orientation,
+                                        simplify=simplify)
                 elif unicode(node.strip()).count('/') == 2:
                     namespace = '/'.join(node.strip().split('/')[0:2])
                     if namespace not in namespace_clusters:
@@ -510,15 +520,17 @@ class RosGraphDotcodeGenerator:
         edges where the edges to tf topics have been removed, and
         a map with all the connections to the resulting tf group node'''
         removal_nodes = []
-        tf_topic_edges_in = list()
-        tf_topic_edges_out = list()
+        tf_topic_edges_in = []
+        tf_topic_edges_out = []
         # do not manipulate incoming structures
         nodes = copy.copy(nodes_in)
         edges = copy.copy(edges_in)
         for n in nodes:
             if unicode(n).strip() in ['/tf', '/tf_static']:
-                tf_topic_edges_in.extend([x for x in node_connections[n].incoming if x in edges and x.end in nodes])
-                tf_topic_edges_out.extend([x for x in node_connections[n].outgoing if x in edges and x.start in nodes])
+                tf_topic_edges_in.extend(
+                    [x for x in node_connections[n].incoming if x in edges and x.end in nodes])
+                tf_topic_edges_out.extend(
+                    [x for x in node_connections[n].outgoing if x in edges and x.start in nodes])
                 removal_nodes.append(n)
 
                 for e in tf_topic_edges_out:
@@ -580,7 +592,7 @@ class RosGraphDotcodeGenerator:
         edges_in,
         node_connections,
         hide_tf_nodes,
-        hide_dynamic_reconfigure):
+            hide_dynamic_reconfigure):
         if not hide_tf_nodes and not hide_dynamic_reconfigure:
             return nodes_in, edges_in
         # do not manipulate incoming structures
@@ -636,7 +648,7 @@ class RosGraphDotcodeGenerator:
         group_tf_nodes=False,
         hide_tf_nodes=False,
         group_image_nodes=False,
-        hide_dynamic_reconfigure=False):
+            hide_dynamic_reconfigure=False):
         """
         See generate_dotcode
         """
@@ -648,16 +660,22 @@ class RosGraphDotcodeGenerator:
         # create the node definitions
         if graph_mode == NODE_NODE_GRAPH:
             nn_nodes = rosgraphinst.nn_nodes
-            nn_nodes = [n for n in nn_nodes if matches_any(n, includes) and not matches_any(n, excludes)]
+            nn_nodes = \
+                [n for n in nn_nodes if matches_any(n, includes) and not matches_any(n, excludes)]
             edges = rosgraphinst.nn_edges
-            edges = [e for e in edges if matches_any(e.label, topic_includes) and not matches_any(e.label, topic_excludes)]
+            edges = \
+                [e for e in edges if matches_any(
+                    e.label, topic_includes) and not matches_any(e.label, topic_excludes)]
 
         elif graph_mode == NODE_TOPIC_GRAPH or \
-                 graph_mode == NODE_TOPIC_ALL_GRAPH:
+                graph_mode == NODE_TOPIC_ALL_GRAPH:
             nn_nodes = rosgraphinst.nn_nodes
             nt_nodes = rosgraphinst.nt_nodes
-            nn_nodes = [n for n in nn_nodes if matches_any(n, includes) and not matches_any(n, excludes)]
-            nt_nodes = [n for n in nt_nodes if matches_any(n, topic_includes) and not matches_any(n, topic_excludes)]
+            nn_nodes = \
+                [n for n in nn_nodes if matches_any(n, includes) and not matches_any(n, excludes)]
+            nt_nodes = \
+                [n for n in nt_nodes if matches_any(n, topic_includes) and
+                    not matches_any(n, topic_excludes)]
 
             # create the edge definitions, unwrap EdgeList objects into python lists
             if graph_mode == NODE_TOPIC_GRAPH:
@@ -678,10 +696,10 @@ class RosGraphDotcodeGenerator:
         # for accumulating tf node connections
         tf_connections = None
 
-        if graph_mode != NODE_NODE_GRAPH and (hide_single_connection_topics \
-                or hide_dead_end_topics or accumulate_actions
-                or group_tf_nodes or hide_tf_nodes
-                or group_image_nodes or hide_dynamic_reconfigure):
+        if graph_mode != NODE_NODE_GRAPH and (hide_single_connection_topics or
+                                              hide_dead_end_topics or accumulate_actions or
+                                              group_tf_nodes or hide_tf_nodes or
+                                              group_image_nodes or hide_dynamic_reconfigure):
             # maps outgoing and incoming edges to nodes
             node_connections = self._get_node_edge_map(edges)
 
@@ -700,17 +718,21 @@ class RosGraphDotcodeGenerator:
                 hide_dynamic_reconfigure)
 
             if accumulate_actions:
-                nt_nodes, edges, action_nodes = self._accumulate_action_topics(nt_nodes, edges, node_connections)
+                nt_nodes, edges, action_nodes = self._accumulate_action_topics(
+                    nt_nodes, edges, node_connections)
             if group_image_nodes:
-                nt_nodes, edges, image_nodes = self._accumulate_image_topics(nt_nodes, edges, node_connections)
+                nt_nodes, edges, image_nodes = self._accumulate_image_topics(
+                    nt_nodes, edges, node_connections)
             if group_tf_nodes and not hide_tf_nodes:
-                nt_nodes, edges, tf_connections = self._group_tf_nodes(nt_nodes, edges, node_connections)
+                nt_nodes, edges, tf_connections = self._group_tf_nodes(
+                    nt_nodes, edges, node_connections)
 
         edges = self._filter_orphaned_edges(edges, nn_nodes + nt_nodes)
         nt_nodes = self._filter_orphaned_topics(nt_nodes, edges)
 
         # create the graph
-        # result = "digraph G {\n  rankdir=%(orientation)s;\n%(nodes_str)s\n%(edges_str)s}\n" % vars()
+        # result = "digraph G {\n
+        # rankdir=%(orientation)s;\n%(nodes_str)s\n%(edges_str)s}\n" % vars()
         dotgraph = dotcode_factory.get_graph(
             rank=rank,
             ranksep=ranksep,
@@ -720,12 +742,14 @@ class RosGraphDotcodeGenerator:
         ACTION_TOPICS_SUFFIX = '/action_topics'
         IMAGE_TOPICS_SUFFIX = '/image_topics'
 
+        node_list = (nt_nodes or []) + \
+            [action_prefix + ACTION_TOPICS_SUFFIX for (action_prefix, _) in action_nodes.items()] + \
+            [image_prefix + IMAGE_TOPICS_SUFFIX for (image_prefix, _) in image_nodes.items()] + \
+            nn_nodes if nn_nodes is not None else []
+
         namespace_clusters = self._populate_node_graph(
             cluster_namespaces_level,
-            (nt_nodes or [])
-                + [action_prefix + ACTION_TOPICS_SUFFIX for (action_prefix, _) in action_nodes.items()]
-                + [image_prefix + IMAGE_TOPICS_SUFFIX for (image_prefix, _) in image_nodes.items()]
-                + nn_nodes if nn_nodes is not None else [],
+            node_list,
             dotcode_factory,
             dotgraph,
             rank,
@@ -733,17 +757,19 @@ class RosGraphDotcodeGenerator:
             simplify)
 
         for n in nt_nodes or []:
-             # cluster topics with same namespace
-             if cluster_namespaces_level > 0 and \
+            # cluster topics with same namespace
+            if cluster_namespaces_level > 0 and \
                     unicode(n).strip().count('/') > 1 and \
                     len(n.strip().split('/')[1]) > 0:
                 if n.count('/') <= cluster_namespaces_level:
                     namespace = unicode('/'.join(n.strip().split('/')[:-1]))
                 else:
                     namespace = '/'.join(n.strip().split('/')[:cluster_namespaces_level + 1])
-                self._add_topic_node(n, dotcode_factory=dotcode_factory, dotgraph=namespace_clusters[namespace], quiet=quiet)
-             else:
-                self._add_topic_node(n, dotcode_factory=dotcode_factory, dotgraph=dotgraph, quiet=quiet)
+                self._add_topic_node(
+                    n, dotcode_factory=dotcode_factory, dotgraph=namespace_clusters[namespace], quiet=quiet)
+            else:
+                self._add_topic_node(
+                    n, dotcode_factory=dotcode_factory, dotgraph=dotgraph, quiet=quiet)
 
         for n in [action_prefix + ACTION_TOPICS_SUFFIX for (action_prefix, _) in action_nodes.items()] + \
                 [image_prefix + IMAGE_TOPICS_SUFFIX for (image_prefix, _) in image_nodes.items()]:
@@ -755,13 +781,16 @@ class RosGraphDotcodeGenerator:
                     namespace = unicode('/'.join(n.strip().split('/')[:-1]))
                 else:
                     namespace = '/'.join(n.strip().split('/')[:cluster_namespaces_level + 1])
-                self._add_topic_node_group('n' + n, dotcode_factory=dotcode_factory, dotgraph=namespace_clusters[namespace], quiet=quiet)
+                self._add_topic_node_group(
+                    'n' + n, dotcode_factory=dotcode_factory, dotgraph=namespace_clusters[namespace], quiet=quiet)
             else:
-                self._add_topic_node_group('n' + n, dotcode_factory=dotcode_factory, dotgraph=dotgraph, quiet=quiet)
+                self._add_topic_node_group(
+                    'n' + n, dotcode_factory=dotcode_factory, dotgraph=dotgraph, quiet=quiet)
 
         if tf_connections != None:
             # render tf nodes as a single node
-            self._add_topic_node_group('n/tf', dotcode_factory=dotcode_factory, dotgraph=dotgraph, quiet=quiet)
+            self._add_topic_node_group(
+                'n/tf', dotcode_factory=dotcode_factory, dotgraph=dotgraph, quiet=quiet)
             for out_edge in tf_connections.get('outgoing', []):
                 dotcode_factory.add_edge_to_graph(dotgraph, _conv('n/tf'), _conv(out_edge.end))
             for in_edge in tf_connections.get('incoming', []):
@@ -792,7 +821,8 @@ class RosGraphDotcodeGenerator:
                     unreachable=unreachable)
 
         for e in edges:
-            self._add_edge(e, dotcode_factory, dotgraph=dotgraph, is_topic=(graph_mode == NODE_NODE_GRAPH))
+            self._add_edge(
+                e, dotcode_factory, dotgraph=dotgraph, is_topic=(graph_mode == NODE_NODE_GRAPH))
 
         for (action_prefix, node_connections) in action_nodes.items():
             for out_edge in node_connections.get('outgoing', []):
@@ -817,7 +847,6 @@ class RosGraphDotcodeGenerator:
                     _conv(in_edge.start),
                     _conv('n' + image_prefix + IMAGE_TOPICS_SUFFIX))
 
-
         return dotgraph
 
     def generate_dotcode(
@@ -841,7 +870,7 @@ class RosGraphDotcodeGenerator:
         hide_tf_nodes=False,
         group_tf_nodes=False,
         group_image_nodes=False,
-        hide_dynamic_reconfigure=False):
+            hide_dynamic_reconfigure=False):
         """
         @param rosgraphinst: RosGraph instance
         @param ns_filter: nodename filter
@@ -855,7 +884,8 @@ class RosGraphDotcodeGenerator:
         @param dotcode_factory: abstract factory manipulating dot language objects
         @param hide_single_connection_topics: if true remove topics with just one connection
         @param hide_dead_end_topics: if true remove topics with publishers only
-        @param cluster_namespaces_level: if > 0 places box around members of same namespace (TODO: multiple namespace layers)
+        @param cluster_namespaces_level: if > 0 places box around members of same namespace
+               (TODO: multiple namespace layers)
         @param accumulate_actions: if true each 5 action topic graph nodes are shown as single graph node
         @return: dotcode generated from graph singleton
         @rtype: str
