@@ -46,17 +46,16 @@ import itertools
 import random
 import logging
 import traceback
-try:
-    from xmlrpc.client import ServerProxy
-except ImportError:
-    from xmlrpclib import ServerProxy
 import socket
 
-import rosgraph.masterapi
+from collections import defaultdict
 
-logger = logging.getLogger('rosgraph.graph')
+from python_qt_binding.QtCore import qDebug, qWarning
+from rclpy import logging
+
 
 _ROS_NAME = '/rosviz'
+
 
 def topic_node(topic):
     """
@@ -66,6 +65,8 @@ def topic_node(topic):
     @return str: topic mapped to a graph node name.
     """
     return ' ' + topic
+
+
 def node_topic(node):
     """
     Inverse of topic_node
@@ -73,30 +74,33 @@ def node_topic(node):
     """
     return node[1:]
 
+
 class BadNode(object):
     """
     Data structure for storing info about a 'bad' node
     """
 
-    ## no connectivity
+    # no connectivity
     DEAD = 0
-    ## intermittent connectivity
+    # intermittent connectivity
     WONKY = 1
 
-    def __init__(self, name, type, reason):
+    def __init__(self, name, node_type, reason):
         """
         @param type: DEAD | WONKY
         @type  type: int
         """
-        self.name =name
+        self.name = name
         self.reason = reason
-        self.type = type
+        self.type = node_type
+
 
 class EdgeList(object):
     """
     Data structure for storing Edge instances
     """
     __slots__ = ['edges_by_start', 'edges_by_end']
+
     def __init__(self):
         # in order to make it easy to purge edges, we double-index them
         self.edges_by_start = {}
@@ -114,8 +118,7 @@ class EdgeList(object):
         @rtype: bool
         """
         key = edge.key
-        return key in self.edges_by_start and \
-               edge in self.edges_by_start[key]
+        return key in self.edges_by_start and edge in self.edges_by_start[key]
 
     def add(self, edge):
         """
@@ -124,16 +127,16 @@ class EdgeList(object):
         @type  edge: Edge
         """
         # see note in __init__
-        def update_map(map, key, edge):
-            if key in map:
-                l = map[key]
-                if not edge in l:
-                    l.append(edge)
+        def update_map(edge_map, key, edge):
+            if key in edge_map:
+                edges = edge_map[key]
+                if edge not in edges:
+                    edges.append(edge)
                     return True
                 else:
                     return False
             else:
-                map[key] = [edge]
+                edge_map[key] = [edge]
                 return True
 
         updated = update_map(self.edges_by_start, edge.key, edge)
@@ -161,9 +164,9 @@ class EdgeList(object):
         # doing an update
         updated = False
         if not start:
-            logger.warn("cannot add edge: cannot map start [%s] to a node name", start)
+            qWarning("cannot add edge: cannot map start [%s] to a node name", start)
         elif not dest:
-            logger.warn("cannot add edge: cannot map dest [%s] to a node name", dest)
+            qWarning("cannot add edge: cannot map dest [%s] to a node name", dest)
         else:
             for args in edge_args(start, dest, direction, label):
                 updated = self.add(Edge(*args)) or updated
@@ -195,26 +198,31 @@ class EdgeList(object):
         update_map(self.edges_by_start, edge.key, edge)
         update_map(self.edges_by_end, edge.rkey, edge)
 
+
 class Edge(object):
     """
     Data structure for representing ROS node graph edge
     """
 
     __slots__ = ['start', 'end', 'label', 'key', 'rkey']
+
     def __init__(self, start, end, label=''):
         self.start = start
         self.end = end
         self.label = label
-        self.key = "%s|%s"%(self.start, self.label)
+        self.key = "%s|%s" % (self.start, self.label)
         # reverse key, indexed from end
-        self.rkey = "%s|%s"%(self.end, self.label)
+        self.rkey = "%s|%s" % (self.end, self.label)
 
     def __ne__(self, other):
         return self.start != other.start or self.end != other.end
+
     def __str__(self):
-        return "%s->%s"%(self.start, self.end)
+        return "%s->%s" % (self.start, self.end)
+
     def __eq__(self, other):
         return self.start == other.start and self.end == other.end
+
 
 def edge_args(start, dest, direction, label):
     """
@@ -237,9 +245,8 @@ class Graph(object):
     Not multi-thread-safe
     """
 
-    def __init__(self, node_ns='/', topic_ns='/'):
-        self.master = rosgraph.masterapi.Master(_ROS_NAME)
-
+    def __init__(self, node, node_ns='/', topic_ns='/'):
+        self._node = node
         self.node_ns = node_ns or '/'
         self.topic_ns = topic_ns or '/'
 
@@ -263,28 +270,18 @@ class Graph(object):
         self.nt_all_edges = EdgeList()
 
         # node names to URI map
-        self.node_uri_map = {} # { node_name_str : uri_str }
+        self.node_uri_map = {}  # { node_name_str : uri_str }
         # reverse map URIs to node names
-        self.uri_node_map = {} # { uri_str : node_name_str }
+        self.uri_node_map = {}  # { uri_str : node_name_str }
 
-        # time we last contacted master
-        self.last_master_refresh = 0
+        # time we last updated the graph
+        self.last_graph_refresh = 0
         self.last_node_refresh = {}
 
-        # time we last communicated with master
-        # seconds until master data is considered stale
-        self.master_stale = 5.0
+        self.graph_stale = 5.0
         # time we last communicated with node
         # seconds until node data is considered stale
-        self.node_stale = 5.0 #seconds
-
-
-    def set_master_stale(self, stale_secs):
-        """
-        @param stale_secs: seconds that data is considered fresh
-        @type  stale_secs: double
-        """
-        self.master_stale = stale_secs
+        self.node_stale = 5.0  # seconds
 
     def set_node_stale(self, stale_secs):
         """
@@ -293,24 +290,37 @@ class Graph(object):
         """
         self.node_stale = stale_secs
 
-    def _master_refresh(self):
+    def _graph_refresh(self):
         """
         @return: True if nodes information was updated
         @rtype: bool
         """
-        logger.debug("master refresh: starting")
         updated = False
-        try:
-            val = self.master.getSystemState()
-        except rosgraph.masterapi.MasterException as e:
-            print("Unable to contact master", str(e), file=sys.stderr)
-            logger.error("unable to contact master: %s", str(e))
-            return False
+        publishers = defaultdict(list)
+        subscriptions = defaultdict(list)
+        servers = defaultdict(list)
 
-        pubs, subs, srvs = val
+        for name, namespace in self._node.get_node_names_and_namespaces():
+            node_name = namespace + name if namespace.endswith('/') else namespace + '/' + name
+
+            for topic_name, topic_type in \
+                    self._node.get_publisher_names_and_types_by_node(name, namespace):
+                publishers[topic_name].append(node_name)
+
+            for topic_name, topic_type in \
+                    self._node.get_subscriber_names_and_types_by_node(name, namespace):
+                subscriptions[topic_name].append(node_name)
+
+            for service_name, service_type in \
+                    self._node.get_service_names_and_types_by_node(name, namespace):
+                servers[service_name].append(node_name)
+
+        pubs = list(publishers.items())
+        subs = list(subscriptions.items())
+        srvs = list(servers.items())
 
         nodes = []
-        nt_all_edges = self.nt_all_edges
+        nt_all_edges = EdgeList()
         nt_nodes = self.nt_nodes
         for state, direction in ((pubs, 'o'), (subs, 'i')):
             for topic, l in state:
@@ -320,7 +330,10 @@ class Graph(object):
                     for node in l:
                         updated = nt_all_edges.add_edges(
                             node, topic_node(topic), direction) or updated
-
+        self.nt_nodes = nt_nodes
+        self.nt_all_edges = nt_all_edges
+        self.nt_edges = nt_all_edges
+        self.nn_edges = nt_all_edges
         nodes = set(nodes)
 
         srvs = set([s for s, _ in srvs])
@@ -334,14 +347,13 @@ class Graph(object):
             updated = True
 
         if purge:
-            logger.debug("following nodes and related edges will be purged: %s", ','.join(purge))
+            qDebug("following nodes and related edges will be purged: %s", ','.join(purge))
             for p in purge:
-                logger.debug('purging edges for node %s', p)
                 self.nn_edges.delete_all(p)
                 self.nt_edges.delete_all(p)
                 self.nt_all_edges.delete_all(p)
 
-        logger.debug("master refresh: done, updated[%s]", updated)
+        qDebug("Graph refresh: done, updated[%s]" % updated)
         return updated
 
     def _mark_bad_node(self, node, reason):
@@ -367,7 +379,7 @@ class Graph(object):
         finally:
             self.bad_nodes_lock.release()
 
-    def _node_refresh_businfo(self, node, api, bad_node=False):
+    def _node_refresh_businfo(self, node, bad_node=False):
         """
         Retrieve bus info from the node and update nodes and edges as appropriate
         @param node: node name
@@ -378,68 +390,9 @@ class Graph(object):
         should be treated differently
         @type  bad_node: bool
         """
-        try:
-            logger.debug("businfo: contacting node [%s] for bus info", node)
-
-            # unmark bad node, though it stays on the bad list
-            if bad_node:
-                self._unmark_bad_node(node)
-            # Lower the socket timeout as we cannot abide by slow HTTP timeouts.
-            # If a node cannot meet this timeout, it goes on the bad list
-            # TODO: override transport instead.
-            old_timeout = socket.getdefaulttimeout()
-            if bad_node:
-                #even stricter timeout for bad_nodes right now
-                socket.setdefaulttimeout(0.2)
-            else:
-                socket.setdefaulttimeout(1.0)
-
-            code, msg, bus_info = api.getBusInfo(_ROS_NAME)
-
-            socket.setdefaulttimeout(old_timeout)
-        except Exception as e:
-            # node is (still) bad
-            self._mark_bad_node(node, str(e))
-            code = -1
-            msg = traceback.format_exc()
-
-        updated = False
-        if code != 1:
-            logger.error("cannot get stats info from node [%s]: %s", node, msg)
-        else:
-            # [[connectionId1, destinationId1, direction1, transport1, ...]... ]
-            for info in bus_info:
-                # #3579 bad node, ignore
-                if len(info) < 5:
-                    continue
-
-                connection_id = info[0]
-                dest_id       = info[1]
-                direction     = info[2]
-                transport     = info[3]
-                topic         = info[4]
-                if len(info) > 5:
-                    connected = info[5]
-                else:
-                    connected = True #backwards compatibility
-
-                if connected and topic.startswith(self.topic_ns):
-                    # blindly add as we will be able to catch state change via edges.
-                    # this currently means we don't cleanup topics
-                    self.nt_nodes.add(topic_node(topic))
-
-                    # update node->topic->node graph edges
-                    updated = self.nt_edges.add_edges(node, topic_node(topic), direction) or updated
-
-                    # update node->node graph edges
-                    if dest_id.startswith('http://'):
-                        #print("FOUND URI", dest_id)
-                        dest_name = self.uri_node_map.get(dest_id, None)
-                        updated = self.nn_edges.add_edges(node, dest_name, direction, topic) or updated
-                else:
-                    #TODO: anyting to do here?
-                    pass
-        return updated
+        if bad_node:
+            self._mark_bad_node(node, 'Not found during discovery')
+        return True
 
     def _node_refresh(self, node, bad_node=False):
         """
@@ -455,34 +408,18 @@ class Graph(object):
         # getSystemState() instead to prevent the extra connection per node
         updated = False
         uri = self._node_uri_refresh(node)
-        try:
-            if uri:
-                api = ServerProxy(uri)
-                updated = self._node_refresh_businfo(node, api, bad_node)
-        except KeyError as e:
-            logger.warn('cannot contact node [%s] as it is not in the lookup table'%node)
+
+        bad_node = (uri is None)
+        updated = self._node_refresh_businfo(node, bad_node)
         return updated
 
     def _node_uri_refresh(self, node):
-        try:
-            uri = self.master.lookupNode(node)
-        except:
-            msg = traceback.format_exc()
-            logger.warn("master reported error in node lookup: %s"%msg)
+        current_nodes = \
+            {namespace + name for name, namespace in self._node.get_node_names_and_namespaces()}
+        if node not in current_nodes:
+            qWarning('Node "{}" does not exist'.format(node))
             return None
-        # update maps
-        self.node_uri_map[node] = uri
-        self.uri_node_map[uri] = node
-        return uri
-
-    def _node_uri_refresh_all(self):
-        """
-        Build self.node_uri_map and self.uri_node_map using master as a
-        lookup service. This will make N requests to the master for N
-        nodes, so this should only be used sparingly
-        """
-        for node in self.nn_nodes:
-            self._node_uri_refresh(node)
+        return node
 
     def bad_update(self):
         """
@@ -520,8 +457,7 @@ class Graph(object):
             # small yield to keep from torquing the processor
             time.sleep(0.01)
         end_time = time.time()
-        #print("Update (bad nodes) took %ss for %s nodes"%((end_time-start_time), num_nodes))
-        logger.debug("ROS stats (bad nodes) update took %ss"%(end_time-start_time))
+        qDebug("ROS stats (bad nodes) update took %ss" % (end_time - start_time))
         return updated
 
     def update(self):
@@ -548,13 +484,9 @@ class Graph(object):
             # or a node. stop when we have talked to everybody.
 
             # get a new node list from the master
-            if time.time() > (self.last_master_refresh + self.master_stale):
-                updated = self._master_refresh()
-                if self.last_master_refresh == 0:
-                    # first time we contact the master, also refresh our full lookup tables
-                    self._node_uri_refresh_all()
-
-                self.last_master_refresh = time.time()
+            if time.time() > (self.last_graph_refresh + self.graph_stale):
+                updated = self._graph_refresh()
+                self.last_graph_refresh = time.time()
             # contact the nodes for stats
             else:
                 # initialize update_queue based on most current nodes list
@@ -572,12 +504,12 @@ class Graph(object):
                         updated = self._node_refresh(next) or updated
                         # include in random offset (max 1/5th normal update interval)
                         # to help spread out updates
-                        last_node_refresh[next] = time.time() + (random.random() * self.node_stale / 5.0)
+                        last_node_refresh[next] = \
+                            time.time() + (random.random() * self.node_stale / 5.0)
                         num_nodes += 1
 
             # small yield to keep from torquing the processor
             time.sleep(0.01)
         end_time = time.time()
-        #print("Update took %ss for %s nodes"%((end_time-start_time), num_nodes))
-        logger.debug("ROS stats update took %ss"%(end_time-start_time))
+        qDebug("ROS stats update took %ss" % (end_time - start_time))
         return updated

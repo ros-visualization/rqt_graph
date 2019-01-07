@@ -30,17 +30,15 @@
 
 from __future__ import division
 import os
-import rospkg
 
+from ament_index_python import get_resource
 from python_qt_binding import loadUi
 from python_qt_binding.QtCore import QAbstractListModel, QFile, QIODevice, Qt, Signal
 from python_qt_binding.QtGui import QIcon, QImage, QPainter
 from python_qt_binding.QtWidgets import QCompleter, QFileDialog, QGraphicsScene, QWidget
 from python_qt_binding.QtSvg import QSvgGenerator
 
-import rosgraph.impl.graph
-import rosservice
-import rostopic
+from rqt_graph.rosgraph2_impl import Graph
 
 from qt_dotgraph.dot_to_qt import DotToQtGenerator
 # pydot requires some hacks
@@ -49,7 +47,8 @@ from rqt_gui_py.plugin import Plugin
 # TODO: use pygraphviz instead, but non-deterministic layout will first be resolved in graphviz 2.30
 # from qtgui_plugin.pygraphvizfactory import PygraphvizFactory
 
-from .dotcode import RosGraphDotcodeGenerator, NODE_NODE_GRAPH, NODE_TOPIC_ALL_GRAPH, NODE_TOPIC_GRAPH
+from .dotcode import \
+    RosGraphDotcodeGenerator, NODE_NODE_GRAPH, NODE_TOPIC_ALL_GRAPH, NODE_TOPIC_GRAPH
 from .interactive_graphics_view import InteractiveGraphicsView
 
 try:
@@ -109,6 +108,8 @@ class RosGraph(Plugin):
 
     def __init__(self, context):
         super(RosGraph, self).__init__(context)
+        self._node = context.node
+        self._logger = self._node.get_logger().get_child('rqt_graph.ros_graph.RosGraph')
         self.initialized = False
         self.setObjectName('RosGraph')
 
@@ -121,12 +122,12 @@ class RosGraph(Plugin):
         self.dotcode_factory = PydotFactory()
         # self.dotcode_factory = PygraphvizFactory()
         # generator builds rosgraph
-        self.dotcode_generator = RosGraphDotcodeGenerator()
+        self.dotcode_generator = RosGraphDotcodeGenerator(self._node)
         # dot_to_qt transforms into Qt elements using dot layout
         self.dot_to_qt = DotToQtGenerator()
 
-        rp = rospkg.RosPack()
-        ui_file = os.path.join(rp.get_path('rqt_graph'), 'resource', 'RosGraph.ui')
+        _, package_path = get_resource('packages', 'rqt_graph')
+        ui_file = os.path.join(package_path, 'share', 'rqt_graph', 'resource', 'RosGraph.ui')
         loadUi(ui_file, self._widget, {'InteractiveGraphicsView': InteractiveGraphicsView})
         self._widget.setObjectName('RosGraphUi')
         if context.serial_number() > 1:
@@ -216,7 +217,8 @@ class RosGraph(Plugin):
         instance_settings.set_value(
             'auto_fit_graph_check_box_state', self._widget.auto_fit_graph_check_box.isChecked())
         instance_settings.set_value(
-            'highlight_connections_check_box_state', self._widget.highlight_connections_check_box.isChecked())
+            'highlight_connections_check_box_state',
+            self._widget.highlight_connections_check_box.isChecked())
         instance_settings.set_value(
             'group_tf_check_box_state', self._widget.group_tf_check_box.isChecked())
         instance_settings.set_value(
@@ -224,7 +226,8 @@ class RosGraph(Plugin):
         instance_settings.set_value(
             'group_image_check_box_state', self._widget.group_image_check_box.isChecked())
         instance_settings.set_value(
-            'hide_dynamic_reconfigure_check_box_state', self._widget.hide_dynamic_reconfigure_check_box.isChecked())
+            'hide_dynamic_reconfigure_check_box_state',
+            self._widget.hide_dynamic_reconfigure_check_box.isChecked())
 
     def restore_settings(self, plugin_settings, instance_settings):
         self._widget.graph_type_combo_box.setCurrentIndex(
@@ -247,7 +250,8 @@ class RosGraph(Plugin):
         self._widget.auto_fit_graph_check_box.setChecked(
             instance_settings.value('auto_fit_graph_check_box_state', True) in [True, 'true'])
         self._widget.highlight_connections_check_box.setChecked(
-            instance_settings.value('highlight_connections_check_box_state', True) in [True, 'true'])
+            instance_settings.value('highlight_connections_check_box_state', True) in
+            [True, 'true'])
         self._widget.hide_tf_nodes_check_box.setChecked(
             instance_settings.value('hide_tf_nodes_check_box_state', False) in [True, 'true'])
         self._widget.group_tf_check_box.setChecked(
@@ -255,7 +259,8 @@ class RosGraph(Plugin):
         self._widget.group_image_check_box.setChecked(
             instance_settings.value('group_image_check_box_state', True) in [True, 'true'])
         self._widget.hide_dynamic_reconfigure_check_box.setChecked(
-            instance_settings.value('hide_dynamic_reconfigure_check_box_state', True) in [True, 'true'])
+            instance_settings.value('hide_dynamic_reconfigure_check_box_state', True) in
+            [True, 'true'])
         self.initialized = True
         self._refresh_rosgraph()
 
@@ -275,8 +280,7 @@ class RosGraph(Plugin):
         self._widget.group_image_check_box.setEnabled(True)
         self._widget.hide_dynamic_reconfigure_check_box.setEnabled(True)
 
-        self._graph = rosgraph.impl.graph.Graph()
-        self._graph.set_master_stale(5.0)
+        self._graph = Graph(self._node)
         self._graph.set_node_stale(5.0)
         self._graph.update()
         self.node_completionmodel.refresh(self._graph.nn_nodes)
@@ -334,19 +338,17 @@ class RosGraph(Plugin):
             item_type, item_path = url.split(':', 1)
             if item_type == 'node':
                 tool_tip = 'Node:\n  %s' % (item_path)
-                service_names = rosservice.get_service_list(node=item_path)
-                if service_names:
+                service_names_and_types = self._node.get_service_names_and_types()
+                if service_names_and_types:
                     tool_tip += '\nServices:'
-                    for service_name in service_names:
-                        try:
-                            service_type = rosservice.get_service_type(service_name)
-                            tool_tip += '\n  %s [%s]' % (service_name, service_type)
-                        except rosservice.ROSServiceIOException as e:
-                            tool_tip += '\n  %s' % (e)
+                    for service_name, service_type in service_names_and_types:
+                        tool_tip += '\n  %s [%s]' % (service_name, service_type)
                 return tool_tip
             elif item_type == 'topic':
-                topic_type, topic_name, _ = rostopic.get_topic_type(item_path)
-                return 'Topic:\n  %s\nType:\n  %s' % (topic_name, topic_type)
+                for topic_name, topic_type in self._node.get_topic_names_and_types():
+                    if topic_name in item_path:
+                        return 'Topic:\n  %s\nType:\n  %s' % (topic_name, topic_type)
+                return 'No topic with item path {}'.format(item_path)
         return url
 
     def _redraw_graph_view(self):
@@ -416,7 +418,8 @@ class RosGraph(Plugin):
 
     def _save_svg(self):
         file_name, _ = QFileDialog.getSaveFileName(
-            self._widget, self.tr('Save as SVG'), 'rosgraph.svg', self.tr('Scalable Vector Graphic (*.svg)'))
+            self._widget, self.tr('Save as SVG'), 'rosgraph.svg',
+            self.tr('Scalable Vector Graphic (*.svg)'))
         if file_name is None or file_name == '':
             return
 
@@ -431,7 +434,8 @@ class RosGraph(Plugin):
 
     def _save_image(self):
         file_name, _ = QFileDialog.getSaveFileName(
-            self._widget, self.tr('Save as image'), 'rosgraph.png', self.tr('Image (*.bmp *.jpg *.png *.tiff)'))
+            self._widget, self.tr('Save as image'), 'rosgraph.png',
+            self.tr('Image (*.bmp *.jpg *.png *.tiff)'))
         if file_name is None or file_name == '':
             return
 
