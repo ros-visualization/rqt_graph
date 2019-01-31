@@ -35,11 +35,9 @@
 import re
 import copy
 
-import rosgraph.impl.graph
-import roslib
+from rqt_graph import rosgraph2_impl
 import math
 
-import rospy
 import pydot
 
 try:
@@ -96,25 +94,8 @@ class RosGraphDotcodeGenerator:
     # ROS node name -> graph.node object
     nodes = dict([])
 
-    def __init__(self):
-        try:
-            from rosgraph_msgs.msg import TopicStatistics
-            self.stats_sub = rospy.Subscriber(
-                '/statistics', TopicStatistics, self.statistics_callback)
-        except ImportError:
-            # not supported before Indigo
-            pass
-
-    def statistics_callback(self, msg):
-
-        # add connections (if new)
-        if msg.node_sub not in self.edges:
-            self.edges[msg.node_sub] = dict([])
-
-        if msg.topic not in self.edges[msg.node_sub]:
-            self.edges[msg.node_sub][msg.topic] = dict([])
-
-        self.edges[msg.node_sub][msg.topic][msg.node_pub] = msg
+    def __init__(self, node):
+        self._node = node
 
     def _get_max_traffic(self):
         traffic = 10000  # start at 10kb
@@ -254,7 +235,7 @@ class RosGraphDotcodeGenerator:
             if unreachable:
                 return ''
             bn = rosgraphinst.bad_nodes[node]
-            if bn.type == rosgraph.impl.graph.BadNode.DEAD:
+            if bn.type == rosgraph2_impl.BadNode.DEAD:
                 dotcode_factory.add_node_to_graph(
                     dotgraph,
                     nodename=_conv(node),
@@ -262,7 +243,7 @@ class RosGraphDotcodeGenerator:
                     shape="ellipse",
                     url=node + " (DEAD)",
                     color="red")
-            elif bn.type == rosgraph.impl.graph.BadNode.WONKY:
+            elif bn.type == rosgraph2_impl.BadNode.WONKY:
                 dotcode_factory.add_node_to_graph(
                     dotgraph,
                     nodename=_conv(node),
@@ -287,7 +268,7 @@ class RosGraphDotcodeGenerator:
                 url=node)
 
     def _add_topic_node(self, node, dotcode_factory, dotgraph, quiet):
-        label = rosgraph.impl.graph.node_topic(node)
+        label = rosgraph2_impl.node_topic(node)
         dotcode_factory.add_node_to_graph(
             dotgraph,
             nodename=_conv(node),
@@ -296,7 +277,7 @@ class RosGraphDotcodeGenerator:
             url="topic:%s" % label)
 
     def _add_topic_node_group(self, node, dotcode_factory, dotgraph, quiet):
-        label = rosgraph.impl.graph.node_topic(node)
+        label = rosgraph2_impl.node_topic(node)
         dotcode_factory.add_node_to_graph(
             dotgraph,
             nodename=_conv(node),
@@ -322,11 +303,12 @@ class RosGraphDotcodeGenerator:
         Determine the namespaces of the nodes being displayed
         """
         namespaces = []
+        nodes_and_namespaces = dict(self._node.get_node_names_and_namespace())
         if graph_mode == NODE_NODE_GRAPH:
             nodes = graph.nn_nodes
             if quiet:
                 nodes = [n for n in nodes if n not in QUIET_NAMES]
-            namespaces = list(set([roslib.names.namespace(n) for n in nodes]))
+            namespaces = list(set([nodes_and_namespaces[n] for n in nodes]))
 
         elif graph_mode == NODE_TOPIC_GRAPH or \
                 graph_mode == NODE_TOPIC_ALL_GRAPH:
@@ -336,11 +318,11 @@ class RosGraphDotcodeGenerator:
                 nn_nodes = [n for n in nn_nodes if n not in QUIET_NAMES]
                 nt_nodes = [n for n in nt_nodes if n not in QUIET_NAMES]
             if nn_nodes or nt_nodes:
-                namespaces = [roslib.names.namespace(n) for n in nn_nodes]
+                namespaces = [nodes_and_namespaces[n] for n in nn_nodes]
             # an annoyance with the rosgraph library is that it
             # prepends a space to topic names as they have to have
             # different graph node namees from nodes. we have to strip here
-            namespaces.extend([roslib.names.namespace(n[1:]) for n in nt_nodes])
+            namespaces.extend([nodes_and_namespaces[n[1:]] for n in nt_nodes])
 
         return list(set(namespaces))
 
@@ -686,6 +668,7 @@ class RosGraphDotcodeGenerator:
         if quiet:
             nn_nodes = list(filter(self._quiet_filter, nn_nodes))
             nt_nodes = list(filter(self._quiet_filter, nt_nodes))
+
             if graph_mode == NODE_NODE_GRAPH:
                 edges = list(filter(self.quiet_filter_topic_edge, edges))
 
@@ -743,8 +726,8 @@ class RosGraphDotcodeGenerator:
         IMAGE_TOPICS_SUFFIX = '/image_topics'
 
         node_list = (nt_nodes or []) + \
-            [action_prefix + ACTION_TOPICS_SUFFIX for (action_prefix, _) in action_nodes.items()] + \
-            [image_prefix + IMAGE_TOPICS_SUFFIX for (image_prefix, _) in image_nodes.items()] + \
+            [act_prefix + ACTION_TOPICS_SUFFIX for act_prefix, _ in action_nodes.items()] + \
+            [img_prefix + IMAGE_TOPICS_SUFFIX for img_prefix, _ in image_nodes.items()] + \
             nn_nodes if nn_nodes is not None else []
 
         namespace_clusters = self._populate_node_graph(
@@ -766,13 +749,14 @@ class RosGraphDotcodeGenerator:
                 else:
                     namespace = '/'.join(n.strip().split('/')[:cluster_namespaces_level + 1])
                 self._add_topic_node(
-                    n, dotcode_factory=dotcode_factory, dotgraph=namespace_clusters[namespace], quiet=quiet)
+                    n, dotcode_factory=dotcode_factory, dotgraph=namespace_clusters[namespace],
+                    quiet=quiet)
             else:
                 self._add_topic_node(
                     n, dotcode_factory=dotcode_factory, dotgraph=dotgraph, quiet=quiet)
 
-        for n in [action_prefix + ACTION_TOPICS_SUFFIX for (action_prefix, _) in action_nodes.items()] + \
-                [image_prefix + IMAGE_TOPICS_SUFFIX for (image_prefix, _) in image_nodes.items()]:
+        for n in [act_prefix + ACTION_TOPICS_SUFFIX for act_prefix, _ in action_nodes.items()] + \
+                [img_prefix + IMAGE_TOPICS_SUFFIX for img_prefix, _ in image_nodes.items()]:
             # cluster topics with same namespace
             if cluster_namespaces_level > 0 and \
                     unicode(n).strip().count('/') > 1 and \
@@ -782,12 +766,13 @@ class RosGraphDotcodeGenerator:
                 else:
                     namespace = '/'.join(n.strip().split('/')[:cluster_namespaces_level + 1])
                 self._add_topic_node_group(
-                    'n' + n, dotcode_factory=dotcode_factory, dotgraph=namespace_clusters[namespace], quiet=quiet)
+                    'n' + n, dotcode_factory=dotcode_factory,
+                    dotgraph=namespace_clusters[namespace], quiet=quiet)
             else:
                 self._add_topic_node_group(
                     'n' + n, dotcode_factory=dotcode_factory, dotgraph=dotgraph, quiet=quiet)
 
-        if tf_connections != None:
+        if tf_connections is not None:
             # render tf nodes as a single node
             self._add_topic_node_group(
                 'n/tf', dotcode_factory=dotcode_factory, dotgraph=dotgraph, quiet=quiet)
@@ -886,7 +871,8 @@ class RosGraphDotcodeGenerator:
         @param hide_dead_end_topics: if true remove topics with publishers only
         @param cluster_namespaces_level: if > 0 places box around members of same namespace
                (TODO: multiple namespace layers)
-        @param accumulate_actions: if true each 5 action topic graph nodes are shown as single graph node
+        @param accumulate_actions: if true each 5 action topic graph nodes are shown as single
+            graph node
         @return: dotcode generated from graph singleton
         @rtype: str
         """

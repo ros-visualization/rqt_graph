@@ -32,7 +32,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import unittest
-import rospkg
 
 import os
 from rqt_graph.dotcode import RosGraphDotcodeGenerator
@@ -40,10 +39,14 @@ from rqt_graph.dotcode import RosGraphDotcodeGenerator
 PKG = 'rqt_graph'
 
 
+class MockRclpyNode:
+    pass
+
+
 class DotcodeTest(unittest.TestCase):
 
     def test_split_filter_empty(self):
-        gen = RosGraphDotcodeGenerator()
+        gen = RosGraphDotcodeGenerator(MockRclpyNode())
         inc, exc = gen._split_filter_string('')
         self.assertEqual(['.*'], inc)
         self.assertEqual(0, len(exc))
@@ -52,7 +55,7 @@ class DotcodeTest(unittest.TestCase):
         self.assertEqual(0, len(exc))
 
     def test_split_filter_includes(self):
-        gen = RosGraphDotcodeGenerator()
+        gen = RosGraphDotcodeGenerator(MockRclpyNode())
         inc, exc = gen._split_filter_string('foo')
         self.assertEqual(['foo'], inc)
         self.assertEqual(0, len(exc))
@@ -61,7 +64,7 @@ class DotcodeTest(unittest.TestCase):
         self.assertEqual(0, len(exc))
 
     def test_split_filter_excludes(self):
-        gen = RosGraphDotcodeGenerator()
+        gen = RosGraphDotcodeGenerator(MockRclpyNode())
         inc, exc = gen._split_filter_string('-foo')
         self.assertEqual(['.*'], inc)
         self.assertEqual(['foo'], exc)
@@ -70,7 +73,7 @@ class DotcodeTest(unittest.TestCase):
         self.assertEqual(['foo', 'bar'], exc)
 
     def test_split_filter_both(self):
-        gen = RosGraphDotcodeGenerator()
+        gen = RosGraphDotcodeGenerator(MockRclpyNode())
         inc, exc = gen._split_filter_string('-foo , bar ,baz, -bam')
         self.assertEqual(['bar', 'baz'], inc)
         self.assertEqual(['foo', 'bam'], exc)
@@ -82,7 +85,7 @@ class DotcodeTest(unittest.TestCase):
             self.end = end
 
     def test_get_node_edge_map(self):
-        gen = RosGraphDotcodeGenerator()
+        gen = RosGraphDotcodeGenerator(MockRclpyNode())
         e1 = self.MockEdge('foo', 'bar')
         nmap = gen._get_node_edge_map([e1])
         self.assertEqual(2, len(nmap))
@@ -94,7 +97,7 @@ class DotcodeTest(unittest.TestCase):
         self.assertEqual([], nmap['bar'].outgoing)
 
     def test_get_node_edge_map2(self):
-        gen = RosGraphDotcodeGenerator()
+        gen = RosGraphDotcodeGenerator(MockRclpyNode())
         e1 = self.MockEdge('foo', 'bar')
         e2 = self.MockEdge('bar', 'foo')
         e3 = self.MockEdge('foo', 'pam')
@@ -109,7 +112,7 @@ class DotcodeTest(unittest.TestCase):
         self.assertEqual([e2], nmap['bar'].outgoing)
 
     def test_filter_leaf_topics_single_connection(self):
-        gen = RosGraphDotcodeGenerator()
+        gen = RosGraphDotcodeGenerator(MockRclpyNode())
         topic_nodes = ['foo', 'bar', 'pam', 'boo']
         e1 = self.MockEdge('n1', 'foo')
         e2 = self.MockEdge('n2', 'foo')
@@ -134,7 +137,7 @@ class DotcodeTest(unittest.TestCase):
         self.assertEqual([e1, e2, e3, e4, e5, e6], edges)
 
     def test_filter_leaf_topics_dead_end(self):
-        gen = RosGraphDotcodeGenerator()
+        gen = RosGraphDotcodeGenerator(MockRclpyNode())
         topic_nodes = ['foo', 'bar', 'pam', 'boo']
         e1 = self.MockEdge('n1', 'foo')
         e2 = self.MockEdge('n2', 'foo')
@@ -159,7 +162,7 @@ class DotcodeTest(unittest.TestCase):
         self.assertEqual([e1, e2, e3, e4, e5, e6], edges)
 
     def test_filter_leaf_topics_both(self):
-        gen = RosGraphDotcodeGenerator()
+        gen = RosGraphDotcodeGenerator(MockRclpyNode())
         topic_nodes = ['foo', 'bar', 'pam', 'boo']
         e1 = self.MockEdge('n1', 'foo')
         e2 = self.MockEdge('n2', 'foo')
@@ -184,7 +187,7 @@ class DotcodeTest(unittest.TestCase):
         self.assertEqual([e1, e2, e3, e4, e5, e6], edges)
 
     def test_accumulate_action_topics(self):
-        gen = RosGraphDotcodeGenerator()
+        gen = RosGraphDotcodeGenerator(MockRclpyNode())
         topic_nodes = ['foo/feedback', 'foo/goal', 'foo/cancel', 'foo/result', 'foo/status', 'bar']
         e1 = self.MockEdge('n1', 'foo/feedback')
         e2 = self.MockEdge('n1', 'foo/goal')
@@ -200,10 +203,6 @@ class DotcodeTest(unittest.TestCase):
         self.assertEqual(1, len(redges))
         self.assertEqual(1, len(raction_nodes))
         self.assertEqual(
-            ['foo/feedback', 'foo/goal', 'foo/cancel', 'foo/result', 'foo/status', 'bar'], topic_nodes)
+            ['foo/feedback', 'foo/goal', 'foo/cancel', 'foo/result', 'foo/status', 'bar'],
+            topic_nodes)
         self.assertEqual([e1, e2, e3, e4, e5, e6], edges)
-
-
-if __name__ == '__main__':
-    import rosunit
-    rosunit.unitrun(PKG, 'dotcode_test', DotcodeTest)
