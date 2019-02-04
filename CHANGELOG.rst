@@ -2,6 +2,14 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.0 (2019-02-04)
+------------------
+* copy base rosgraph.impl.graph file (`#23 <https://github.com/ros-visualization/rqt_graph/issues/23>`_)
+* port to ROS 2 (`#22 <https://github.com/ros-visualization/rqt_graph/issues/22>`_)
+* autopep8 and gitignore (`#19 <https://github.com/ros-visualization/rqt_graph/issues/19>`_)
+* replace str() by unicode() (`#17 <https://github.com/ros-visualization/rqt_graph/issues/17>`_)
+* edge class is unhashable so cannot put into a set, use a list instead (`#16 <https://github.com/ros-visualization/rqt_graph/issues/16>`_)
+
 0.4.10 (2018-05-22)
 -------------------
 * add nested subnamespaces and more options to hide or group topics (`#13 <https://github.com/ros-visualization/rqt_graph/issues/13>`_)
