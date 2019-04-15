@@ -171,6 +171,7 @@ class RosGraph(Plugin):
         self._widget.group_tf_check_box.clicked.connect(self._refresh_rosgraph)
         self._widget.hide_tf_nodes_check_box.clicked.connect(self._refresh_rosgraph)
         self._widget.group_image_check_box.clicked.connect(self._refresh_rosgraph)
+        self._widget.top_to_bottom_check_box.clicked.connect(self._refresh_rosgraph)
 
         self._widget.refresh_graph_push_button.setIcon(QIcon.fromTheme('view-refresh'))
         self._widget.refresh_graph_push_button.pressed.connect(self._update_rosgraph)
@@ -214,6 +215,8 @@ class RosGraph(Plugin):
         instance_settings.set_value(
             'unreachable_check_box_state', self._widget.unreachable_check_box.isChecked())
         instance_settings.set_value(
+            'top_to_bottom_check_box_state', self._widget.top_to_bottom_check_box.isChecked())
+        instance_settings.set_value(
             'auto_fit_graph_check_box_state', self._widget.auto_fit_graph_check_box.isChecked())
         instance_settings.set_value(
             'highlight_connections_check_box_state', self._widget.highlight_connections_check_box.isChecked())
@@ -244,6 +247,8 @@ class RosGraph(Plugin):
             instance_settings.value('quiet_check_box_state', True) in [True, 'true'])
         self._widget.unreachable_check_box.setChecked(
             instance_settings.value('unreachable_check_box_state', True) in [True, 'true'])
+        self._widget.top_to_bottom_check_box.setChecked(
+            instance_settings.value('top_to_bottom_check_box_state', True) in [True, 'true'])
         self._widget.auto_fit_graph_check_box.setChecked(
             instance_settings.value('auto_fit_graph_check_box_state', True) in [True, 'true'])
         self._widget.highlight_connections_check_box.setChecked(
@@ -293,7 +298,7 @@ class RosGraph(Plugin):
         topic_filter = self._widget.topic_filter_line_edit.text()
         graph_mode = self._widget.graph_type_combo_box.itemData(
             self._widget.graph_type_combo_box.currentIndex())
-        orientation = 'LR'
+        orientation = 'TB' if self._widget.top_to_bottom_check_box.isChecked() else 'LR'
         namespace_cluster = self._widget.namespace_cluster_spin_box.value()
         accumulate_actions = self._widget.actionlib_check_box.isChecked()
         hide_dead_end_topics = self._widget.dead_sinks_check_box.isChecked()
