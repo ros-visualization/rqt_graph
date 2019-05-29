@@ -290,6 +290,8 @@ class RosGraphDotcodeGenerator:
         for n in QUIET_NAMES:
             if n in name:
                 return False
+        if name.rsplit('/', 1)[-1].startswith('_'):
+            return False
         return True
 
     def quiet_filter_topic_edge(self, edge):
@@ -582,21 +584,29 @@ class RosGraphDotcodeGenerator:
         edges = copy.copy(edges_in)
         removal_nodes = []
         for n in nodes:
-            if hide_dynamic_reconfigure and unicode(n).endswith('/parameter_updates'):
-                prefix = unicode(n)[:-len('/parameter_updates')].strip()
-                dynamic_reconfigure_topic_nodes = []
-                for suffix in ['/parameter_updates', '/parameter_descriptions']:
-                    for n2 in nodes:
-                        if unicode(n2).strip() == prefix + suffix:
-                            dynamic_reconfigure_topic_nodes.append(n2)
-                if len(dynamic_reconfigure_topic_nodes) == 2:
-                    for n1 in dynamic_reconfigure_topic_nodes:
-                        if n1 in node_connections:
-                            for e in node_connections[n1].outgoing + node_connections[n1].incoming:
-                                if e in edges:
-                                    edges.remove(e)
-                        removal_nodes.append(n1)
-                    continue
+            # parameter_updates is the ROS 1 dynamic reconfigure topic
+            # parameter_events is the ROS 2 parameter event topic
+            if hide_dynamic_reconfigure:
+                suffix = unicode(n).rsplit('/', 1)[-1]
+                if suffix in ('parameter_updates', 'parameter_events'):
+                    prefix = unicode(n).rsplit('/', 1)[0].strip()
+                    if prefix == 'parameter_updates':
+                        suffixes = ['/parameter_updates', '/parameter_descriptions']
+                    else:
+                        suffixes = ['/parameter_events']
+                    dynamic_reconfigure_topic_nodes = []
+                    for suffix in suffixes:
+                        for n2 in nodes:
+                            if unicode(n2).strip() == prefix + suffix:
+                                dynamic_reconfigure_topic_nodes.append(n2)
+                    if len(dynamic_reconfigure_topic_nodes) == len(suffixes):
+                        for n1 in dynamic_reconfigure_topic_nodes:
+                            if n1 in node_connections:
+                                for e in node_connections[n1].outgoing + node_connections[n1].incoming:
+                                    if e in edges:
+                                        edges.remove(e)
+                            removal_nodes.append(n1)
+                        continue
             if hide_tf_nodes and unicode(n).strip() in ['/tf', '/tf_static']:
                 if n in node_connections:
                     for e in node_connections[n].outgoing + node_connections[n].incoming:
