@@ -385,7 +385,7 @@ class RosGraph(Plugin):
         self._widget.graph_type_combo_box.setEnabled(False)
         self._widget.filter_line_edit.setEnabled(False)
         self._widget.topic_filter_line_edit.setEnabled(False)
-        self._widget.namespace_cluster_check_box.setEnabled(False)
+        self._widget.namespace_cluster_spin_box.setEnabled(False)
         self._widget.actionlib_check_box.setEnabled(False)
         self._widget.dead_sinks_check_box.setEnabled(False)
         self._widget.leaf_topics_check_box.setEnabled(False)
