@@ -2,6 +2,10 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix typo that caused a crash when trying to load a dot file (`#31 <https://github.com/ros-visualization/rqt_graph/issues/31>`_)
+
 1.0.0 (2019-02-04)
 ------------------
 * copy base rosgraph.impl.graph file (`#23 <https://github.com/ros-visualization/rqt_graph/issues/23>`_)
