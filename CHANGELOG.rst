@@ -2,8 +2,8 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.2 (2019-10-03)
+------------------
 * fix typo that caused a crash when trying to load a dot file (`#31 <https://github.com/ros-visualization/rqt_graph/issues/31>`_)
 
 1.0.0 (2019-02-04)
