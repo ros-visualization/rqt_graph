@@ -415,7 +415,7 @@ class Graph(object):
 
     def _node_uri_refresh(self, node):
         current_nodes = {
-            namespace + (' ' if namespace.endswith('/') else '/') + name
+            namespace + ('' if namespace.endswith('/') else '/') + name
             for name, namespace in self._node.get_node_names_and_namespaces()}
         if node not in current_nodes:
             qWarning('Node "{}" does not exist'.format(node))
