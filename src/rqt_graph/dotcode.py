@@ -634,7 +634,7 @@ class RosGraphDotcodeGenerator:
         rank='same',  # None, same, min, max, source, sink
         ranksep=0.2,  # vertical distance between layers
         rankdir='TB',  # direction of layout (TB top > bottom, LR left > right)
-        simplify=True,  # remove double edges
+        simplify=False,  # do not remove double edges
         quiet=False,
         unreachable=False,
         group_tf_nodes=False,
@@ -647,40 +647,21 @@ class RosGraphDotcodeGenerator:
         includes, excludes = self._split_filter_string(ns_filter)
         topic_includes, topic_excludes = self._split_filter_string(topic_filter)
 
-        nn_nodes = []
-        nt_nodes = []
         # create the node definitions
-        if graph_mode == NODE_NODE_GRAPH:
-            nn_nodes = rosgraphinst.nn_nodes
-            nn_nodes = \
-                [n for n in nn_nodes if matches_any(n, includes) and not matches_any(n, excludes)]
-            edges = rosgraphinst.nn_edges
-            edges = \
-                [e for e in edges if matches_any(
-                    e.label, topic_includes) and not matches_any(e.label, topic_excludes)]
+        nn_nodes = [
+            n for n in rosgraphinst.nn_nodes
+            if matches_any(n, includes) and not matches_any(n, excludes)
+        ]
+        nt_nodes = [
+            n for n in rosgraphinst.nt_nodes
+            if matches_any(n, topic_includes) and not matches_any(n, topic_excludes)
+        ]
 
-        elif graph_mode == NODE_TOPIC_GRAPH or \
-                graph_mode == NODE_TOPIC_ALL_GRAPH:
-            nn_nodes = rosgraphinst.nn_nodes
-            nt_nodes = rosgraphinst.nt_nodes
-            nn_nodes = \
-                [n for n in nn_nodes if matches_any(n, includes) and not matches_any(n, excludes)]
-            nt_nodes = \
-                [n for n in nt_nodes if matches_any(n, topic_includes) and
-                    not matches_any(n, topic_excludes)]
-
-            # create the edge definitions, unwrap EdgeList objects into python lists
-            if graph_mode == NODE_TOPIC_GRAPH:
-                edges = [e for e in rosgraphinst.nt_edges]
-            else:
-                edges = [e for e in rosgraphinst.nt_all_edges]
-
-        if quiet:
-            nn_nodes = list(filter(self._quiet_filter, nn_nodes))
-            nt_nodes = list(filter(self._quiet_filter, nt_nodes))
-
-            if graph_mode == NODE_NODE_GRAPH:
-                edges = list(filter(self.quiet_filter_topic_edge, edges))
+        # create the edge definitions, unwrap EdgeList objects into python lists
+        if graph_mode == NODE_TOPIC_GRAPH:
+            edges = [e for e in rosgraphinst.nt_edges]
+        else:
+            edges = [e for e in rosgraphinst.nt_all_edges]
 
         # for accumulating actions topics
         action_nodes = {}
@@ -689,10 +670,10 @@ class RosGraphDotcodeGenerator:
         # for accumulating tf node connections
         tf_connections = None
 
-        if graph_mode != NODE_NODE_GRAPH and (hide_single_connection_topics or
-                                              hide_dead_end_topics or accumulate_actions or
-                                              group_tf_nodes or hide_tf_nodes or
-                                              group_image_nodes or hide_dynamic_reconfigure):
+        if (hide_single_connection_topics or
+            hide_dead_end_topics or accumulate_actions or
+            group_tf_nodes or hide_tf_nodes or
+            group_image_nodes or hide_dynamic_reconfigure):
             # maps outgoing and incoming edges to nodes
             node_connections = self._get_node_edge_map(edges)
 
@@ -710,18 +691,31 @@ class RosGraphDotcodeGenerator:
                 hide_tf_nodes,
                 hide_dynamic_reconfigure)
 
-            if accumulate_actions:
-                nt_nodes, edges, action_nodes = self._accumulate_action_topics(
-                    nt_nodes, edges, node_connections)
-            if group_image_nodes:
-                nt_nodes, edges, image_nodes = self._accumulate_image_topics(
-                    nt_nodes, edges, node_connections)
-            if group_tf_nodes and not hide_tf_nodes:
-                nt_nodes, edges, tf_connections = self._group_tf_nodes(
-                    nt_nodes, edges, node_connections)
+            if graph_mode != NODE_NODE_GRAPH:
+                if accumulate_actions:
+                    nt_nodes, edges, action_nodes = self._accumulate_action_topics(
+                        nt_nodes, edges, node_connections)
+                if group_image_nodes:
+                    nt_nodes, edges, image_nodes = self._accumulate_image_topics(
+                        nt_nodes, edges, node_connections)
+                if group_tf_nodes and not hide_tf_nodes:
+                    nt_nodes, edges, tf_connections = self._group_tf_nodes(
+                        nt_nodes, edges, node_connections)
 
         edges = self._filter_orphaned_edges(edges, nn_nodes + nt_nodes)
         nt_nodes = self._filter_orphaned_topics(nt_nodes, edges)
+
+        if graph_mode == NODE_NODE_GRAPH:
+            nt_nodes, edges = [], [
+                e for e in rosgraphinst.nn_edges if rosgraph2_impl.topic_node(e.label) in nt_nodes
+            ]
+
+        if quiet:
+            nn_nodes = list(filter(self._quiet_filter, nn_nodes))
+            if graph_mode == NODE_NODE_GRAPH:
+                edges = list(filter(self.quiet_filter_topic_edge, edges))
+            else:
+                nt_nodes = list(filter(self._quiet_filter, nt_nodes))
 
         # create the graph
         # result = "digraph G {\n
@@ -859,7 +853,7 @@ class RosGraphDotcodeGenerator:
         rank='same',  # None, same, min, max, source, sink
         ranksep=0.2,  # vertical distance between layers
         rankdir='TB',  # direction of layout (TB top > bottom, LR left > right)
-        simplify=True,  # remove double edges
+        simplify=False,  # do not remove double edges
         quiet=False,
         unreachable=False,
         hide_tf_nodes=False,
