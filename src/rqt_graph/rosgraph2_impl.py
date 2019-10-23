@@ -335,9 +335,8 @@ class Graph(object):
         self.nt_edges = nt_all_edges
 
         nn_edges = EdgeList()
-        subs = dict(subs)
-        for topic, pub_nodes in dict(pubs).items():
-            for pub_node, sub_node in itertools.product(pub_nodes, subs.get(topic, [])):
+        for topic, pub_nodes in publishers.items():
+            for pub_node, sub_node in itertools.product(pub_nodes, subscriptions.get(topic, [])):
                 updated = nn_edges.add_edges(pub_node, sub_node, 'o', topic) or updated
         self.nn_edges = nn_edges
 
