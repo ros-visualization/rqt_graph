@@ -706,7 +706,8 @@ class RosGraphDotcodeGenerator:
         nt_nodes = self._filter_orphaned_topics(nt_nodes, edges)
 
         if graph_mode == NODE_NODE_GRAPH:
-            nt_nodes, edges = [], [
+            nt_nodes = []
+            edges = [
                 e for e in rosgraphinst.nn_edges if rosgraph2_impl.topic_node(e.label) in nt_nodes
             ]
 
