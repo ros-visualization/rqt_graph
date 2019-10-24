@@ -2,6 +2,12 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.3 (2019-10-23)
+------------------
+* Add topic edges for the Nodes Only view mode. (`#35 <https://github.com/ros-visualization/rqt_graph/issues/35>`_)
+* Fix node not found during refresh when namespace is not empty (`#34 <https://github.com/ros-visualization/rqt_graph/issues/34>`_)
+* Contributors: Dirk Thomas, Michel Hidalgo, Xavier BROQUERE
+
 1.0.2 (2019-10-03)
 ------------------
 * fix typo that caused a crash when trying to load a dot file (`#31 <https://github.com/ros-visualization/rqt_graph/issues/31>`_)
