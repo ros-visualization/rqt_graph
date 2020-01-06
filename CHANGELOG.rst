@@ -2,6 +2,10 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* skip removal of non-present tf connections (`#40 <https://github.com/ros-visualization/rqt_graph/issues/40>`_)
+
 1.0.3 (2019-10-23)
 ------------------
 * Add topic edges for the Nodes Only view mode. (`#35 <https://github.com/ros-visualization/rqt_graph/issues/35>`_)
