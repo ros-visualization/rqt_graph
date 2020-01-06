@@ -2,6 +2,15 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* skip removal of non-present tf connections (`#40 <https://github.com/ros-visualization/rqt_graph/issues/40>`_)
+* add Python 3 conditional dependencies (`#37 <https://github.com/ros-visualization/rqt_graph/issues/37>`_)
+* fix typo that caused a crash when trying to load a dot file. (`#31 <https://github.com/ros-visualization/rqt_graph/issues/31>`_)
+* autopep8 and gitignore (`#19 <https://github.com/ros-visualization/rqt_graph/issues/19>`_)
+* replace str() by unicode() (`#17 <https://github.com/ros-visualization/rqt_graph/issues/17>`_)
+* edge class is unhashable so cannot put into a set, use a list instead (`#16 <https://github.com/ros-visualization/rqt_graph/issues/16>`_)
+
 0.4.10 (2018-05-22)
 -------------------
 * add nested subnamespaces and more options to hide or group topics (`#13 <https://github.com/ros-visualization/rqt_graph/issues/13>`_)
