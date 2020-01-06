@@ -2,8 +2,8 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.11 (2020-01-06)
+-------------------
 * skip removal of non-present tf connections (`#40 <https://github.com/ros-visualization/rqt_graph/issues/40>`_)
 * add Python 3 conditional dependencies (`#37 <https://github.com/ros-visualization/rqt_graph/issues/37>`_)
 * fix typo that caused a crash when trying to load a dot file. (`#31 <https://github.com/ros-visualization/rqt_graph/issues/31>`_)
