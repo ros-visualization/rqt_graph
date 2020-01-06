@@ -510,7 +510,7 @@ class RosGraphDotcodeGenerator:
         nodes = copy.copy(nodes_in)
         edges = copy.copy(edges_in)
         for n in nodes:
-            if unicode(n).strip() in ['/tf', '/tf_static']:
+            if unicode(n).strip() in ['/tf', '/tf_static'] and n in node_connections:
                 tf_topic_edges_in.extend(
                     [x for x in node_connections[n].incoming if x in edges and x.end in nodes])
                 tf_topic_edges_out.extend(
