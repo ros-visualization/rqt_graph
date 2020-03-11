@@ -2,8 +2,8 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.12 (2020-03-11)
+-------------------
 * bump CMake minimum version to avoid CMP0048 warning
 
 0.4.11 (2020-01-06)
