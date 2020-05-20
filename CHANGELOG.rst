@@ -2,6 +2,10 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use catkin_install_python() (`#43 <https://github.com/ros-visualization/rqt_graph/issues/43>`_)
+
 0.4.12 (2020-03-11)
 -------------------
 * bump CMake minimum version to avoid CMP0048 warning
