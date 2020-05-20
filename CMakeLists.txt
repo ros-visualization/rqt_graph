@@ -17,6 +17,6 @@ install(DIRECTORY resource
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
-install(PROGRAMS scripts/rqt_graph
+catkin_install_python(PROGRAMS scripts/rqt_graph
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
