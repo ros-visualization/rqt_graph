@@ -2,8 +2,8 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.13 (2020-05-20)
+-------------------
 * use catkin_install_python() (`#43 <https://github.com/ros-visualization/rqt_graph/issues/43>`_)
 
 0.4.12 (2020-03-11)
