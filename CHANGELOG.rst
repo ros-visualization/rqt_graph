@@ -2,6 +2,10 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* readd rqt_graph global executable, regression from 0.4.13 (`#45 <https://github.com/ros-visualization/rqt_graph/issues/45>`_)
+
 0.4.13 (2020-05-20)
 -------------------
 * use catkin_install_python() (`#43 <https://github.com/ros-visualization/rqt_graph/issues/43>`_)
