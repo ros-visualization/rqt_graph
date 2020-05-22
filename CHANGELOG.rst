@@ -2,8 +2,8 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.14 (2020-05-22)
+-------------------
 * readd rqt_graph global executable, regression from 0.4.13 (`#45 <https://github.com/ros-visualization/rqt_graph/issues/45>`_)
 
 0.4.13 (2020-05-20)
