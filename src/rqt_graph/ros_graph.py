@@ -134,6 +134,12 @@ class RosGraph(Plugin):
             self._widget.setWindowTitle(
                 self._widget.windowTitle() + (' (%d)' % context.serial_number()))
 
+        icon_paths = QIcon.themeSearchPaths()
+        icon_paths.append(os.path.join(
+            package_path, 'share', 'rqt_graph', 'resource', 'icons', 'rqt_icons'))
+        QIcon.setThemeSearchPaths(icon_paths)
+        QIcon.setThemeName('rqt_icons')
+
         self._scene = QGraphicsScene()
         self._scene.setBackgroundBrush(Qt.white)
         self._widget.graphics_view.setScene(self._scene)

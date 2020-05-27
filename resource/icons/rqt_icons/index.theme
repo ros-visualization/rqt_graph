@@ -1,0 +1,11 @@
+[Icon Theme]
+Name=rqt_icons
+
+Comment=Default Qt icons
+
+Directories=actions/22
+
+[actions/22]
+Size=22
+Context=Actions
+Type=Fixed
