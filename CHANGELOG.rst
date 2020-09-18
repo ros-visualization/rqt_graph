@@ -2,8 +2,8 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.5 (2020-09-18)
+------------------
 * install executable rqt_graph (`#49 <https://github.com/ros-visualization/rqt_graph/issues/49>`_)
 * add setup.cfg with script install directories (`#42 <https://github.com/ros-visualization/rqt_graph/issues/42>`_)
 * add pytest.ini so local tests don't display warning (`#48 <https://github.com/ros-visualization/rqt_graph/issues/48>`_)
