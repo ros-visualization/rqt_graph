@@ -225,10 +225,31 @@ class RosGraphDotcodeGenerator:
                     _conv(edge.end),
                     label=temp_label,
                     penwidth=penwidth,
-                    color=color)
+                    color=color,
+                    edgetooltip=self._qos_to_string(edge.qos))
             else:
                 dotcode_factory.add_edge_to_graph(
-                    dotgraph, _conv(edge.start), _conv(edge.end), label=edge.label)
+                    dotgraph,
+                    _conv(edge.start),
+                    _conv(edge.end),
+                    label=edge.label,
+                    edgetooltip=self._qos_to_string(edge.qos))
+
+    def _qos_to_string(self, qos):
+        if qos is None:
+            return None
+        s = 'QoS settings'
+        for slot_name in qos.__slots__:
+            property_name = slot_name[1:]
+            if not hasattr(qos, property_name):
+                continue
+            value = getattr(qos, property_name)
+            if hasattr(value, 'short_key'):
+                value = value.short_key
+            elif hasattr(value, 'nanoseconds'):
+                value = str(value.nanoseconds) + ' ns'
+            s += '\n- %s: %s' % (property_name, value)
+        return s
 
     def _add_node(self, node, rosgraphinst, dotcode_factory, dotgraph, unreachable):
         if node in rosgraphinst.bad_nodes:
