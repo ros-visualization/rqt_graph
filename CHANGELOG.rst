@@ -2,6 +2,12 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* install executable rqt_graph (`#49 <https://github.com/ros-visualization/rqt_graph/issues/49>`_)
+* add setup.cfg with script install directories (`#42 <https://github.com/ros-visualization/rqt_graph/issues/42>`_)
+* add pytest.ini so local tests don't display warning (`#48 <https://github.com/ros-visualization/rqt_graph/issues/48>`_)
+
 1.0.4 (2020-01-06)
 ------------------
 * skip removal of non-present tf connections (`#40 <https://github.com/ros-visualization/rqt_graph/issues/40>`_)
