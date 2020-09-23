@@ -241,6 +241,9 @@ class RosGraphDotcodeGenerator:
         s = 'QoS settings'
         for slot_name in qos.__slots__:
             property_name = slot_name[1:]
+            # ignore values currently not introspectable
+            if property_name in ('history', 'depth'):
+                continue
             if not hasattr(qos, property_name):
                 continue
             value = getattr(qos, property_name)
