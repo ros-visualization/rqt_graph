@@ -2,6 +2,10 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add edge tooltip with QoS of publishers and subscribers (`#53 <https://github.com/ros-visualization/rqt_graph/issues/53>`_)
+
 1.0.5 (2020-09-18)
 ------------------
 * install executable rqt_graph (`#49 <https://github.com/ros-visualization/rqt_graph/issues/49>`_)
