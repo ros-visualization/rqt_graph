@@ -21,7 +21,7 @@
 
   <exec_depend>ament_index_python</exec_depend>
   <exec_depend>python_qt_binding</exec_depend>
-  <exec_depend>qt_dotgraph</exec_depend>
+  <exec_depend version_gte="1.1.2">qt_dotgraph</exec_depend>
   <exec_depend>rqt_gui</exec_depend>
   <exec_depend>rqt_gui_py</exec_depend>
 

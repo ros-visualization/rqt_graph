@@ -143,7 +143,7 @@ class EdgeList(object):
         updated = update_map(self.edges_by_end, edge.rkey, edge) or updated
         return updated
 
-    def add_edges(self, start, dest, direction, label=''):
+    def add_edges(self, start, dest, direction, label='', qos=None):
         """
         Create Edge instances for args and add resulting edges to edge
         list. Convenience method to avoid repetitve logging, etc...
@@ -168,7 +168,7 @@ class EdgeList(object):
         elif not dest:
             qWarning("cannot add edge: cannot map dest [%s] to a node name", dest)
         else:
-            for args in edge_args(start, dest, direction, label):
+            for args in edge_args(start, dest, direction, label, qos):
                 updated = self.add(Edge(*args)) or updated
         return updated
 
@@ -204,12 +204,13 @@ class Edge(object):
     Data structure for representing ROS node graph edge
     """
 
-    __slots__ = ['start', 'end', 'label', 'key', 'rkey']
+    __slots__ = ['start', 'end', 'label', 'key', 'rkey', 'qos']
 
-    def __init__(self, start, end, label=''):
+    def __init__(self, start, end, label='', qos=None):
         self.start = start
         self.end = end
         self.label = label
+        self.qos = qos
         self.key = "%s|%s" % (self.start, self.label)
         # reverse key, indexed from end
         self.rkey = "%s|%s" % (self.end, self.label)
@@ -221,10 +222,11 @@ class Edge(object):
         return "%s->%s" % (self.start, self.end)
 
     def __eq__(self, other):
-        return self.start == other.start and self.end == other.end
+        return self.start == other.start and self.end == other.end and \
+            self.label == other.label and self.qos == other.qos
 
 
-def edge_args(start, dest, direction, label):
+def edge_args(start, dest, direction, label, qos):
     """
     compute argument ordering for Edge constructor based on direction flag
     @param direction str: 'i', 'o', or 'b' (in/out/bidir) relative to \a start
@@ -233,9 +235,9 @@ def edge_args(start, dest, direction, label):
     """
     edge_args = []
     if direction in ['o', 'b']:
-        edge_args.append((start, dest, label))
+        edge_args.append((start, dest, label, qos))
     if direction in ['i', 'b']:
-        edge_args.append((dest, start, label))
+        edge_args.append((dest, start, label, qos))
     return edge_args
 
 
@@ -300,20 +302,42 @@ class Graph(object):
         subscriptions = defaultdict(list)
         servers = defaultdict(list)
 
+        publisher_topic_names = set()
+        subscriber_topic_names = set()
+
         for name, namespace in self._node.get_node_names_and_namespaces():
             node_name = namespace + name if namespace.endswith('/') else namespace + '/' + name
 
             for topic_name, topic_type in \
                     self._node.get_publisher_names_and_types_by_node(name, namespace):
                 publishers[topic_name].append(node_name)
+                publisher_topic_names.add(topic_name)
 
             for topic_name, topic_type in \
                     self._node.get_subscriber_names_and_types_by_node(name, namespace):
                 subscriptions[topic_name].append(node_name)
+                subscriber_topic_names.add(topic_name)
 
             for service_name, service_type in \
                     self._node.get_service_names_and_types_by_node(name, namespace):
                 servers[service_name].append(node_name)
+
+        publisher_qos_lists = defaultdict(list)
+        for topic_name in publisher_topic_names:
+            for topic_endpoint_info in self._node.get_publishers_info_by_topic(topic_name):
+                node_name = topic_endpoint_info.node_namespace
+                if not node_name.endswith('/'):
+                    node_name += '/'
+                node_name += topic_endpoint_info.node_name
+                publisher_qos_lists[(node_name, topic_name)].append(topic_endpoint_info.qos_profile)
+        subscriber_qos_lists = defaultdict(list)
+        for topic_name in subscriber_topic_names:
+            for topic_endpoint_info in self._node.get_subscriptions_info_by_topic(topic_name):
+                node_name = topic_endpoint_info.node_namespace
+                if not node_name.endswith('/'):
+                    node_name += '/'
+                node_name += topic_endpoint_info.node_name
+                subscriber_qos_lists[(node_name, topic_name)].append(topic_endpoint_info.qos_profile)
 
         pubs = list(publishers.items())
         subs = list(subscriptions.items())
@@ -328,8 +352,15 @@ class Graph(object):
                     nodes.extend([n for n in l if n.startswith(self.node_ns)])
                     nt_nodes.add(topic_node(topic))
                     for node in l:
-                        updated = nt_all_edges.add_edges(
-                            node, topic_node(topic), direction) or updated
+                        if direction == 'o':
+                            qos_list = publisher_qos_lists[(node, topic)]
+                        elif direction == 'i':
+                            qos_list = subscriber_qos_lists[(node, topic)]
+                        else:
+                            qos_list = {None}
+                        for qos in qos_list:
+                            updated |= nt_all_edges.add_edges(
+                                node, topic_node(topic), direction, qos=qos)
         self.nt_nodes = nt_nodes
         self.nt_all_edges = nt_all_edges
         self.nt_edges = nt_all_edges
