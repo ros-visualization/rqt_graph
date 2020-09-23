@@ -222,7 +222,8 @@ class Edge(object):
         return "%s->%s" % (self.start, self.end)
 
     def __eq__(self, other):
-        return self.start == other.start and self.end == other.end
+        return self.start == other.start and self.end == other.end and \
+            self.label == other.label and self.qos == other.qos
 
 
 def edge_args(start, dest, direction, label, qos):
@@ -321,22 +322,22 @@ class Graph(object):
                     self._node.get_service_names_and_types_by_node(name, namespace):
                 servers[service_name].append(node_name)
 
-        publisher_qos = {}
+        publisher_qos_lists = defaultdict(list)
         for topic_name in publisher_topic_names:
             for topic_endpoint_info in self._node.get_publishers_info_by_topic(topic_name):
                 node_name = topic_endpoint_info.node_namespace
                 if not node_name.endswith('/'):
                     node_name += '/'
                 node_name += topic_endpoint_info.node_name
-                publisher_qos.setdefault((node_name, topic_name), topic_endpoint_info.qos_profile)
-        subscriber_qos = {}
+                publisher_qos_lists[(node_name, topic_name)].append(topic_endpoint_info.qos_profile)
+        subscriber_qos_lists = defaultdict(list)
         for topic_name in subscriber_topic_names:
             for topic_endpoint_info in self._node.get_subscriptions_info_by_topic(topic_name):
                 node_name = topic_endpoint_info.node_namespace
                 if not node_name.endswith('/'):
                     node_name += '/'
                 node_name += topic_endpoint_info.node_name
-                subscriber_qos.setdefault((node_name, topic_name), topic_endpoint_info.qos_profile)
+                subscriber_qos_lists[(node_name, topic_name)].append(topic_endpoint_info.qos_profile)
 
         pubs = list(publishers.items())
         subs = list(subscriptions.items())
@@ -351,13 +352,15 @@ class Graph(object):
                     nodes.extend([n for n in l if n.startswith(self.node_ns)])
                     nt_nodes.add(topic_node(topic))
                     for node in l:
-                        qos = None
                         if direction == 'o':
-                            qos = publisher_qos[(node, topic)]
+                            qos_list = publisher_qos_lists[(node, topic)]
                         elif direction == 'i':
-                            qos = subscriber_qos[(node, topic)]
-                        updated = nt_all_edges.add_edges(
-                            node, topic_node(topic), direction, qos=qos) or updated
+                            qos_list = subscriber_qos_lists[(node, topic)]
+                        else:
+                            qos_list = {None}
+                        for qos in qos_list:
+                            updated |= nt_all_edges.add_edges(
+                                node, topic_node(topic), direction, qos=qos)
         self.nt_nodes = nt_nodes
         self.nt_all_edges = nt_all_edges
         self.nt_edges = nt_all_edges
