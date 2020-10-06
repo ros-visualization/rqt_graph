@@ -8,7 +8,7 @@
       (use <a href = "http://www.ros.org/wiki/rqt_dep">rqt_dep</a> to find out
       the pkgs that depend. rqt_dep itself depends on rqt_graph too).
   </description>
-  <maintainer email="michael.jeronimo@openrobotics.org.com">Michael Jeronimo</maintainer>
+  <maintainer email="michael.jeronimo@openrobotics.org">Michael Jeronimo</maintainer>
   <maintainer email="william@openrobotics.org">William Woodall</maintainer>
   <license>BSD</license>
   <url type="website">http://wiki.ros.org/rqt_graph</url>
