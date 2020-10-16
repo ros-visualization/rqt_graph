@@ -304,6 +304,7 @@ class RosGraph(Plugin):
         hide_tf_nodes = self._widget.hide_tf_nodes_check_box.isChecked()
         group_image_nodes = self._widget.group_image_check_box.isChecked()
         hide_dynamic_reconfigure = self._widget.hide_dynamic_reconfigure_check_box.isChecked()
+        simplify = (graph_mode != NODE_NODE_GRAPH)
 
         return self.dotcode_generator.generate_dotcode(
             rosgraphinst=self._graph,
@@ -321,7 +322,8 @@ class RosGraph(Plugin):
             group_tf_nodes=group_tf_nodes,
             hide_tf_nodes=hide_tf_nodes,
             group_image_nodes=group_image_nodes,
-            hide_dynamic_reconfigure=hide_dynamic_reconfigure)
+            hide_dynamic_reconfigure=hide_dynamic_reconfigure,
+            simplify=simplify)
 
     def _update_graph_view(self, dotcode):
         if dotcode == self._current_dotcode:

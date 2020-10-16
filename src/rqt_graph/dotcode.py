@@ -209,7 +209,7 @@ class RosGraphDotcodeGenerator:
         else:
             return [None, None, None]
 
-    def _add_edge(self, edge, dotcode_factory, dotgraph, is_topic=False):
+    def _add_edge(self, edge, dotcode_factory, dotgraph, is_topic=False, simplify=True):
         if is_topic:
             sub = edge.end
             topic = edge.label
@@ -224,14 +224,16 @@ class RosGraphDotcodeGenerator:
                     label=temp_label,
                     url='topic:%s' % edge.label,
                     penwidth=penwidth,
-                    color=color)
+                    color=color,
+                    simplify=simplify)
             else:
                 dotcode_factory.add_edge_to_graph(
                     dotgraph,
                     _conv(edge.start),
                     _conv(edge.end),
                     label=edge.label,
-                    url='topic:%s' % edge.label)
+                    url='topic:%s' % edge.label,
+                    simplify=simplify)
         else:
             sub = edge.end.strip()
             topic = edge.start.strip()
@@ -822,7 +824,7 @@ class RosGraphDotcodeGenerator:
 
         for e in edges:
             self._add_edge(
-                e, dotcode_factory, dotgraph=dotgraph, is_topic=(graph_mode == NODE_NODE_GRAPH))
+                e, dotcode_factory, dotgraph=dotgraph, is_topic=(graph_mode == NODE_NODE_GRAPH), simplify=simplify)
 
         for (action_prefix, node_connections) in action_nodes.items():
             for out_edge in node_connections.get('outgoing', []):
