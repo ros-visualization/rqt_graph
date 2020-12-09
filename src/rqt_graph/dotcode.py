@@ -204,7 +204,16 @@ class RosGraphDotcodeGenerator:
             age_string = ""
             if age > 0.0:
                 age_string = " // " + unicode(round(age, 2) * 1000) + " ms"
-            label = freq + " Hz" + age_string
+            if self.edges[sub][topic][pub].traffic > 0 :
+                traffic = self.edges[sub][topic][pub].traffic / self.edges[sub][topic][pub].delivered_msgs
+            else:
+                traffic = 0
+            traffic_string = "{}".format(traffic)
+            if traffic > 1000:
+                traffic_string = "{}K".format(traffic/1000)
+            if traffic > 1000000:
+                traffic_string = "{}M".format(traffic/1000000)
+            label = freq + " Hz" + age_string + " // " + traffic_string
             return [label, penwidth, color]
         else:
             return [None, None, None]
