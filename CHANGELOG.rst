@@ -2,8 +2,8 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.1 (2021-03-18)
+------------------
 * Update maintainers for ROS2 branches (`#55 <https://github.com/ros-visualization/rqt_graph/issues/55>`_)
 * Contributors: Michael Jeronimo
 
