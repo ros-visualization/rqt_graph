@@ -2,6 +2,11 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update maintainers for ROS2 branches (`#55 <https://github.com/ros-visualization/rqt_graph/issues/55>`_)
+* Contributors: Michael Jeronimo
+
 1.1.0 (2020-09-23)
 ------------------
 * add edge tooltip with QoS of publishers and subscribers (`#53 <https://github.com/ros-visualization/rqt_graph/issues/53>`_)
