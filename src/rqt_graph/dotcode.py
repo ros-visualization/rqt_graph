@@ -238,6 +238,8 @@ class RosGraphDotcodeGenerator:
     def _qos_to_string(self, start, end, qos):
         if qos is None:
             return None
+        # topic names are prefixed with an space, unlike node names
+        # see rosgraph2_impl.topic_node()
         if start[0] == ' ':
             topic_name = start[1:]
             node_name = end
