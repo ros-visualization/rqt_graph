@@ -301,14 +301,18 @@ class RosGraphDotcodeGenerator:
                 shape='ellipse',
                 url=node)
 
-    def _add_topic_node(self, node, dotcode_factory, dotgraph, quiet):
+    def _add_topic_node(self, node, rosgraphinst, dotcode_factory, dotgraph, quiet):
         label = rosgraph2_impl.node_topic(node)
+        color = None
+        if label in rosgraphinst.topic_with_qos_incompatibility:
+            color = 'red'
         dotcode_factory.add_node_to_graph(
             dotgraph,
             nodename=_conv(node),
             nodelabel=label,
             shape='box',
-            url="topic:%s" % label)
+            url="topic:%s" % label,
+            color=color)
 
     def _add_topic_node_group(self, node, dotcode_factory, dotgraph, quiet):
         label = rosgraph2_impl.node_topic(node)
@@ -788,11 +792,15 @@ class RosGraphDotcodeGenerator:
                 else:
                     namespace = '/'.join(n.strip().split('/')[:cluster_namespaces_level + 1])
                 self._add_topic_node(
-                    n, dotcode_factory=dotcode_factory, dotgraph=namespace_clusters[namespace],
+                    n,
+                    rosgraphinst=rosgraphinst,
+                    dotcode_factory=dotcode_factory, dotgraph=namespace_clusters[namespace],
                     quiet=quiet)
             else:
                 self._add_topic_node(
-                    n, dotcode_factory=dotcode_factory, dotgraph=dotgraph, quiet=quiet)
+                    n,
+                    rosgraphinst=rosgraphinst,
+                    dotcode_factory=dotcode_factory, dotgraph=dotgraph, quiet=quiet)
 
         for n in [act_prefix + ACTION_TOPICS_SUFFIX for act_prefix, _ in action_nodes.items()] + \
                 [img_prefix + IMAGE_TOPICS_SUFFIX for img_prefix, _ in image_nodes.items()]:
