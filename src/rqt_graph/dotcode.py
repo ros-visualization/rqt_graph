@@ -226,19 +226,29 @@ class RosGraphDotcodeGenerator:
                     label=temp_label,
                     penwidth=penwidth,
                     color=color,
-                    edgetooltip=self._qos_to_string(edge.qos))
+                    edgetooltip=self._qos_to_string(edge.start, edge.end, edge.qos))
             else:
                 dotcode_factory.add_edge_to_graph(
                     dotgraph,
                     _conv(edge.start),
                     _conv(edge.end),
                     label=edge.label,
-                    edgetooltip=self._qos_to_string(edge.qos))
+                    edgetooltip=self._qos_to_string(edge.start, edge.end, edge.qos))
 
-    def _qos_to_string(self, qos):
+    def _qos_to_string(self, start, end, qos):
         if qos is None:
             return None
-        s = 'QoS settings'
+        # topic names are prefixed with an space, unlike node names
+        # see rosgraph2_impl.topic_node()
+        if start[0] == ' ':
+            topic_name = start[1:]
+            node_name = end
+            endpoint = 'Subscription'
+        else:
+            topic_name = end[1:]
+            node_name = start
+            endpoint = 'Publisher'
+        s = f'{endpoint}\nnode_name: {node_name}\ntopic_name: {topic_name}\nQoS settings'
         for slot_name in qos.__slots__:
             property_name = slot_name[1:]
             # ignore values currently not introspectable
@@ -251,7 +261,7 @@ class RosGraphDotcodeGenerator:
                 value = value.short_key
             elif hasattr(value, 'nanoseconds'):
                 value = str(value.nanoseconds) + ' ns'
-            s += '\n- %s: %s' % (property_name, value)
+            s += f'\n- {property_name}: {value}'
         return s
 
     def _add_node(self, node, rosgraphinst, dotcode_factory, dotgraph, unreachable):
