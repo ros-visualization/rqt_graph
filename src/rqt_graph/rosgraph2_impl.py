@@ -52,6 +52,8 @@ from collections import defaultdict
 
 from python_qt_binding.QtCore import qDebug, qWarning
 from rclpy import logging
+from rclpy.qos import qos_check_compatible
+from rclpy.qos import QoSCompatibility
 
 
 _ROS_NAME = '/rosviz'
@@ -285,6 +287,10 @@ class Graph(object):
         # seconds until node data is considered stale
         self.node_stale = 5.0  # seconds
 
+        # dictionary with qos incompatibilities found
+        # {topic_name: {publisher_node_name: [subscription_node_name, ...], ...}, ...}
+        self.topic_with_qos_incompatibility = defaultdict(lambda: defaultdict(list))
+
     def set_node_stale(self, stale_secs):
         """
         @param stale_secs: seconds that data is considered fresh
@@ -322,22 +328,32 @@ class Graph(object):
                     self._node.get_service_names_and_types_by_node(name, namespace):
                 servers[service_name].append(node_name)
 
-        publisher_qos_lists = defaultdict(list)
+        publisher_qos_lists = defaultdict(lambda: defaultdict(list))
         for topic_name in publisher_topic_names:
             for topic_endpoint_info in self._node.get_publishers_info_by_topic(topic_name):
                 node_name = topic_endpoint_info.node_namespace
                 if not node_name.endswith('/'):
                     node_name += '/'
                 node_name += topic_endpoint_info.node_name
-                publisher_qos_lists[(node_name, topic_name)].append(topic_endpoint_info.qos_profile)
-        subscriber_qos_lists = defaultdict(list)
+                publisher_qos_lists[topic_name][node_name].append(topic_endpoint_info.qos_profile)
+        subscriber_qos_lists = defaultdict(lambda: defaultdict(list))
         for topic_name in subscriber_topic_names:
             for topic_endpoint_info in self._node.get_subscriptions_info_by_topic(topic_name):
                 node_name = topic_endpoint_info.node_namespace
                 if not node_name.endswith('/'):
                     node_name += '/'
                 node_name += topic_endpoint_info.node_name
-                subscriber_qos_lists[(node_name, topic_name)].append(topic_endpoint_info.qos_profile)
+                subscriber_qos_lists[topic_name][node_name].append(topic_endpoint_info.qos_profile)
+
+        for topic, node_qos_profiles_dict in publisher_qos_lists.items():
+            for pub_node, pub_qos_list in node_qos_profiles_dict.items():
+                for sub_node, sub_qos_list in subscriber_qos_lists[topic].items():
+                    if any(
+                        qos_check_compatible(pub_qos, sub_qos)[0] == QoSCompatibility.ERROR
+                        for pub_qos in pub_qos_list
+                        for sub_qos in sub_qos_list
+                    ):
+                        self.topic_with_qos_incompatibility[topic][pub_node].append(sub_node)
 
         pubs = list(publishers.items())
         subs = list(subscriptions.items())
@@ -353,9 +369,9 @@ class Graph(object):
                     nt_nodes.add(topic_node(topic))
                     for node in l:
                         if direction == 'o':
-                            qos_list = publisher_qos_lists[(node, topic)]
+                            qos_list = publisher_qos_lists[topic][node]
                         elif direction == 'i':
-                            qos_list = subscriber_qos_lists[(node, topic)]
+                            qos_list = subscriber_qos_lists[topic][node]
                         else:
                             qos_list = {None}
                         for qos in qos_list:
