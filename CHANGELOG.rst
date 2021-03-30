@@ -2,8 +2,8 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.0 (2021-03-30)
+------------------
 * Make topics that have qos incompatibilities red in the graph, add information to the node tooltip (`#61 <https://github.com/ros-visualization/rqt_graph/issues/61>`_)
 * Add node name, topic name, and endpoint kind to the qos edge tooltip (`#60 <https://github.com/ros-visualization/rqt_graph/issues/60>`_)
 * Contributors: Ivan Santiago Paunovic
