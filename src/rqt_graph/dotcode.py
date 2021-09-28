@@ -747,9 +747,8 @@ class RosGraphDotcodeGenerator:
 
         if quiet:
             nn_nodes = list(filter(self._quiet_filter, nn_nodes))
-            if graph_mode == NODE_NODE_GRAPH:
-                edges = list(filter(self.quiet_filter_topic_edge, edges))
-            else:
+            edges = list(filter(self.quiet_filter_topic_edge, edges))
+            if graph_mode != NODE_TOPIC_GRAPH:
                 nt_nodes = list(filter(self._quiet_filter, nt_nodes))
 
         # create the graph
