@@ -2,6 +2,11 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.1 (2022-01-14)
+------------------
+* Fix quiet filtering for node_topic graphs (`#70 <https://github.com/ros-visualization/rqt_graph/issues/70>`_)
+* Contributors: David V. Lu!!
+
 1.2.0 (2021-03-30)
 ------------------
 * Make topics that have qos incompatibilities red in the graph, add information to the node tooltip (`#61 <https://github.com/ros-visualization/rqt_graph/issues/61>`_)
