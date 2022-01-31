@@ -2,6 +2,12 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.3 (2022-01-31)
+------------------
+* Graph load/save into DOT file corrections for Python 3 (`#62 <https://github.com/ros-visualization/rqt_graph/issues/62>`_)
+* Fix quiet filtering for node_topic graphs (`#70 <https://github.com/ros-visualization/rqt_graph/issues/70>`_) (`#71 <https://github.com/ros-visualization/rqt_graph/issues/71>`_)
+* Contributors: David V. Lu!!, skudryas
+
 1.1.2 (2021-04-12)
 ------------------
 * Add node name, topic name, and endpoint kind to the qos edge tooltip (`#60 <https://github.com/ros-visualization/rqt_graph/issues/60>`_)
