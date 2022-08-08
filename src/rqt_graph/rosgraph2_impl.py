@@ -40,18 +40,13 @@ from __future__ import print_function
 Data structures and library for representing ROS Computation Graph state.
 """
 
-import sys
 import time
 import itertools
 import random
-import logging
-import traceback
-import socket
 
 from collections import defaultdict
 
 from python_qt_binding.QtCore import qDebug, qWarning
-from rclpy import logging
 from rclpy.qos import qos_check_compatible
 from rclpy.qos import QoSCompatibility
 
@@ -157,11 +152,11 @@ class EdgeList(object):
         @type  dest: str
         @param direction: direction string (i/o/b)
         @type  direction: str
-        @return: True if update occured
+        @return: True if update occurred
         @rtype: bool
         """
 
-        # the warnings should generally be temporary, occuring of the
+        # the warnings should generally be temporary, occurring of the
         # master/node information becomes stale while we are still
         # doing an update
         updated = False
@@ -183,7 +178,7 @@ class EdgeList(object):
         def matching(map, pref):
             return [map[k] for k in map.keys() if k.startswith(pref)]
 
-        pref = node+"|"
+        pref = node + "|"
         edge_lists = matching(self.edges_by_start, pref) + matching(self.edges_by_end, pref)
         for el in edge_lists:
             for e in el:
