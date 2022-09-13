@@ -2,6 +2,13 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Minor cleanup (`#80 <https://github.com/ros-visualization/rqt_graph/issues/80>`_)
+* Mirror rolling to galactic-devel
+* graph load/save into DOT file corrections for py3 (`#78 <https://github.com/ros-visualization/rqt_graph/issues/78>`_)
+* Contributors: Audrow Nash, David V. Lu!!, mergify[bot]
+
 1.2.1 (2022-01-14)
 ------------------
 * Fix quiet filtering for node_topic graphs (`#70 <https://github.com/ros-visualization/rqt_graph/issues/70>`_)
