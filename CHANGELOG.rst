@@ -2,8 +2,8 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.2 (2022-09-13)
+------------------
 * Minor cleanup (`#80 <https://github.com/ros-visualization/rqt_graph/issues/80>`_)
 * Mirror rolling to galactic-devel
 * graph load/save into DOT file corrections for py3 (`#78 <https://github.com/ros-visualization/rqt_graph/issues/78>`_)
