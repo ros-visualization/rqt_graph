@@ -2,6 +2,9 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.2.1 (2022-01-14)
 ------------------
 * Fix quiet filtering for node_topic graphs (`#70 <https://github.com/ros-visualization/rqt_graph/issues/70>`_)
