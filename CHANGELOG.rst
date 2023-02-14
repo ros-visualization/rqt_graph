@@ -2,6 +2,11 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [rolling] Update maintainers - 2022-11-07 (`#83 <https://github.com/ros-visualization/rqt_graph/issues/83>`_)
+* Contributors: Audrow Nash, Chris Lalancette
+
 1.4.0 (2022-09-13)
 ------------------
 * Minor cleanup (`#80 <https://github.com/ros-visualization/rqt_graph/issues/80>`_)
