@@ -170,6 +170,7 @@ class RosGraph(Plugin):
         self._widget.quiet_check_box.clicked.connect(self._refresh_rosgraph)
         self._widget.unreachable_check_box.clicked.connect(self._refresh_rosgraph)
         self._widget.group_tf_check_box.clicked.connect(self._refresh_rosgraph)
+        self._widget.hide_dynamic_reconfigure_check_box.clicked.connect(self._refresh_rosgraph)
         self._widget.hide_tf_nodes_check_box.clicked.connect(self._refresh_rosgraph)
         self._widget.group_image_check_box.clicked.connect(self._refresh_rosgraph)
 
