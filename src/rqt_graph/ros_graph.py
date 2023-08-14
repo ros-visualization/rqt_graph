@@ -411,7 +411,7 @@ class RosGraph(Plugin):
         if not handle.open(QIODevice.WriteOnly | QIODevice.Text):
             return
 
-        handle.write(self._current_dotcode)
+        handle.write(self._current_dotcode.encode('utf-8'))
         handle.close()
 
     def _save_svg(self):
