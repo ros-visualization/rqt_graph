@@ -234,6 +234,19 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="top_to_bottom_check_box">
+        <property name="toolTip">
+         <string>Enable top to bottom layout</string>
+        </property>
+        <property name="text">
+         <string>TB layout</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QCheckBox" name="auto_fit_graph_check_box">
         <property name="toolTip">
          <string>Automatically fit graph into view on update</string>
