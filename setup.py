@@ -3,7 +3,7 @@ from setuptools import setup
 package_name = 'rqt_graph'
 setup(
     name=package_name,
-    version='1.5.1',
+    version='1.5.2',
     package_dir={'': 'src'},
     packages=[package_name],
     data_files=[
