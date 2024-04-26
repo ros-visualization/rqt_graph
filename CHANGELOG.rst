@@ -2,6 +2,9 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.5.3 (2024-04-16)
 ------------------
 * Update maintainer list in package.xml files (`#92 <https://github.com/ros-visualization/rqt_graph/issues/92>`_)
