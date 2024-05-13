@@ -178,7 +178,7 @@ class RosGraph(Plugin):
 
         self._widget.highlight_connections_check_box.toggled.connect(self._redraw_graph_view)
         self._widget.auto_fit_graph_check_box.toggled.connect(self._redraw_graph_view)
-        self._widget.fit_in_view_push_button.setIcon(QIcon.fromTheme('zoom-original'))
+        self._widget.fit_in_view_push_button.setIcon(QIcon.fromTheme('view-fullscreen'))
         self._widget.fit_in_view_push_button.pressed.connect(self._fit_in_view)
 
         self._widget.load_dot_push_button.setIcon(QIcon.fromTheme('document-open'))
