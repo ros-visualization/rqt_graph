@@ -2,6 +2,11 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed fit_in_view icon button (`#98 <https://github.com/ros-visualization/rqt_graph/issues/98>`_)
+* Contributors: Alejandro Hernández Cordero
+
 1.4.2 (2023-05-11)
 ------------------
 * Refresh rosgraph when params checkbox is clicked (`#87 <https://github.com/ros-visualization/rqt_graph/issues/87>`_)
