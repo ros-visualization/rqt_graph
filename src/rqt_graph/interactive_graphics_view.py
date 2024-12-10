@@ -41,25 +41,25 @@ class InteractiveGraphicsView(QGraphicsView):
         super(InteractiveGraphicsView, self).__init__(parent)
         self.setObjectName('InteractiveGraphicsView')
 
-        self._last_pan_point = None
+        self.last_pan_pt = None
         self._last_scene_center = None
 
     def mousePressEvent(self, mouse_event):
-        self._last_pan_point = mouse_event.pos()
+        self.last_pan_pt = mouse_event.pos()
         self._last_scene_center = self._map_to_scene_f(QRectF(self.frameRect()).center())
         self.setCursor(Qt.ClosedHandCursor)
 
     def mouseReleaseEvent(self, mouse_event):
         self.setCursor(Qt.OpenHandCursor)
-        self._last_pan_point = None
+        self.last_pan_pt = None
 
     def mouseMoveEvent(self, mouse_event):
-        if self._last_pan_point is not None:
-            delta_scene = self.mapToScene(mouse_event.pos()) - self.mapToScene(self._last_pan_point)
+        if self.last_pan_pt is not None:
+            delta_scene = self.mapToScene(mouse_event.pos()) - self.mapToScene(self.last_pan_pt)
             if not delta_scene.isNull():
                 self.centerOn(self._last_scene_center - delta_scene)
                 self._last_scene_center -= delta_scene
-            self._last_pan_point = mouse_event.pos()
+            self.last_pan_pt = mouse_event.pos()
         QGraphicsView.mouseMoveEvent(self, mouse_event)
 
     def wheelEvent(self, wheel_event):

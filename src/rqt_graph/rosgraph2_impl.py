@@ -1,50 +1,41 @@
-# Software License Agreement (BSD License)
-#
-# Copyright (c) 2008, Willow Garage, Inc.
-# All rights reserved.
+# Copyright (c) 2008, Open Source Robotics Foundation, Inc.
 #
 # Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
+# modification, are permitted provided that the following conditions are met:
 #
-#  * Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-#  * Redistributions in binary form must reproduce the above
-#    copyright notice, this list of conditions and the following
-#    disclaimer in the documentation and/or other materials provided
-#    with the distribution.
-#  * Neither the name of Willow Garage, Inc. nor the names of its
-#    contributors may be used to endorse or promote products derived
-#    from this software without specific prior written permission.
+#    * Redistributions of source code must retain the above copyright
+#      notice, this list of conditions and the following disclaimer.
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#    * Redistributions in binary form must reproduce the above copyright
+#      notice, this list of conditions and the following disclaimer in the
+#      documentation and/or other materials provided with the distribution.
+#
+#    * Neither the name of the Willow Garage nor the names of its
+#      contributors may be used to endorse or promote products derived from
+#      this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
+
 # Revision $Id$
 # Adopted from the ROS1 ros_comm repository
 # https://github.com/ros/ros_comm/blob/5de058ad1bbf3a525ae3f5288a76e59ec0dd62d0/tools/rosgraph/src/rosgraph/impl/graph.py
 
-from __future__ import print_function
-
-"""
-Data structures and library for representing ROS Computation Graph state.
-"""
-
-import time
-import itertools
-import random
+"""Data structures and library for representing ROS Computation Graph state."""
 
 from collections import defaultdict
+import itertools
+import random
+import time
 
 from python_qt_binding.QtCore import qDebug, qWarning
 from rclpy.qos import qos_check_compatible
@@ -56,6 +47,8 @@ _ROS_NAME = '/rosviz'
 
 def topic_node(topic):
     """
+    Prepend space to avoid topic/node name aliasing.
+
     In order to prevent topic/node name aliasing, we have to remap
     topic node names. Currently we just prepend a space, which is
     an illegal ROS name and thus not aliased.
@@ -66,6 +59,8 @@ def topic_node(topic):
 
 def node_topic(node):
     """
+    Undo topic_node() mangling.
+
     Inverse of topic_node
     @return str: undo topic_node() operation
     """
@@ -73,9 +68,7 @@ def node_topic(node):
 
 
 class BadNode(object):
-    """
-    Data structure for storing info about a 'bad' node
-    """
+    """Data structure for storing info about a 'bad' node."""
 
     # no connectivity
     DEAD = 0
@@ -83,19 +76,14 @@ class BadNode(object):
     WONKY = 1
 
     def __init__(self, name, node_type, reason):
-        """
-        @param type: DEAD | WONKY
-        @type  type: int
-        """
         self.name = name
         self.reason = reason
         self.type = node_type
 
 
 class EdgeList(object):
-    """
-    Data structure for storing Edge instances
-    """
+    """Data structure for storing Edge instances."""
+
     __slots__ = ['edges_by_start', 'edges_by_end']
 
     def __init__(self):
@@ -104,13 +92,15 @@ class EdgeList(object):
         self.edges_by_end = {}
 
     def __iter__(self):
-        return itertools.chain(*[v for v in self.edges_by_start.values()])
+        return itertools.chain(*list(self.edges_by_start.values()))
 
     def has(self, edge):
         return edge in self
 
     def __contains__(self, edge):
         """
+        Determine whether an edge is in the edge list.
+
         @return: True if edge is in edge list
         @rtype: bool
         """
@@ -119,7 +109,8 @@ class EdgeList(object):
 
     def add(self, edge):
         """
-        Add an edge to our internal representation. not multi-thread safe
+        Add an edge to our internal representation.
+
         @param edge: edge to add
         @type  edge: Edge
         """
@@ -142,8 +133,9 @@ class EdgeList(object):
 
     def add_edges(self, start, dest, direction, label='', qos=None):
         """
-        Create Edge instances for args and add resulting edges to edge
-        list. Convenience method to avoid repetitve logging, etc...
+        Create Edge instances for args and add resulting edges to edge list.
+
+        A convenience method to avoid repetitve logging, etc.
         @param edge_list: data structure to add edge to
         @type  edge_list: EdgeList
         @param start: name of start node. If None, warning will be logged and add fails
@@ -155,15 +147,14 @@ class EdgeList(object):
         @return: True if update occurred
         @rtype: bool
         """
-
         # the warnings should generally be temporary, occurring of the
         # master/node information becomes stale while we are still
         # doing an update
         updated = False
         if not start:
-            qWarning("cannot add edge: cannot map start [%s] to a node name", start)
+            qWarning('cannot add edge: cannot map start [%s] to a node name', start)
         elif not dest:
-            qWarning("cannot add edge: cannot map dest [%s] to a node name", dest)
+            qWarning('cannot add edge: cannot map dest [%s] to a node name', dest)
         else:
             for args in edge_args(start, dest, direction, label, qos):
                 updated = self.add(Edge(*args)) or updated
@@ -171,14 +162,15 @@ class EdgeList(object):
 
     def delete_all(self, node):
         """
-        Delete all edges that start or end at node
+        Delete all edges that start or end at node.
+
         @param node: name of node
         @type  node: str
         """
-        def matching(map, pref):
-            return [map[k] for k in map.keys() if k.startswith(pref)]
+        def matching(which_map, pref):
+            return [which_map[k] for k in which_map.keys() if k.startswith(pref)]
 
-        pref = node + "|"
+        pref = node + '|'
         edge_lists = matching(self.edges_by_start, pref) + matching(self.edges_by_end, pref)
         for el in edge_lists:
             for e in el:
@@ -186,9 +178,9 @@ class EdgeList(object):
 
     def delete(self, edge):
         # see note in __init__
-        def update_map(map, key, edge):
-            if key in map:
-                edges = map[key]
+        def update_map(which_map, key, edge):
+            if key in which_map:
+                edges = which_map[key]
                 if edge in edges:
                     edges.remove(edge)
                     return True
@@ -197,9 +189,7 @@ class EdgeList(object):
 
 
 class Edge(object):
-    """
-    Data structure for representing ROS node graph edge
-    """
+    """Data structure for representing ROS node graph edge."""
 
     __slots__ = ['start', 'end', 'label', 'key', 'rkey', 'qos']
 
@@ -208,15 +198,15 @@ class Edge(object):
         self.end = end
         self.label = label
         self.qos = qos
-        self.key = "%s|%s" % (self.start, self.label)
+        self.key = '%s|%s' % (self.start, self.label)
         # reverse key, indexed from end
-        self.rkey = "%s|%s" % (self.end, self.label)
+        self.rkey = '%s|%s' % (self.end, self.label)
 
     def __ne__(self, other):
         return self.start != other.start or self.end != other.end
 
     def __str__(self):
-        return "%s->%s" % (self.start, self.end)
+        return '%s->%s' % (self.start, self.end)
 
     def __eq__(self, other):
         return self.start == other.start and self.end == other.end and \
@@ -225,8 +215,9 @@ class Edge(object):
 
 def edge_args(start, dest, direction, label, qos):
     """
-    compute argument ordering for Edge constructor based on direction flag
-    @param direction str: 'i', 'o', or 'b' (in/out/bidir) relative to \a start
+    Compute argument ordering for Edge constructor based on direction flag.
+
+    @param direction str: 'i', 'o', or 'b' (in/out/bidir) relative to start
     @param start str: name of starting node
     @param start dest: name of destination node
     """
@@ -239,10 +230,7 @@ def edge_args(start, dest, direction, label, qos):
 
 
 class Graph(object):
-    """
-    Utility class for polling ROS statistics from running ROS graph.
-    Not multi-thread-safe
-    """
+    """Utility class for polling ROS statistics from running ROS graph."""
 
     def __init__(self, node, node_ns='/', topic_ns='/'):
         self._node = node
@@ -250,9 +238,9 @@ class Graph(object):
         self.topic_ns = topic_ns or '/'
 
         # ROS nodes
-        self.nn_nodes = set([])
+        self.nn_nodes = set()
         # ROS topic nodes
-        self.nt_nodes = set([])
+        self.nt_nodes = set()
 
         # ROS nodes that aren't responding quickly
         self.bad_nodes = {}
@@ -260,7 +248,7 @@ class Graph(object):
         self.bad_nodes_lock = threading.Lock()
 
         # ROS services
-        self.srvs = set([])
+        self.srvs = set()
         # ROS node->node transport connections
         self.nn_edges = EdgeList()
         # ROS node->topic connections
@@ -288,6 +276,8 @@ class Graph(object):
 
     def set_node_stale(self, stale_secs):
         """
+        Set the stale attribute of a node.
+
         @param stale_secs: seconds that data is considered fresh
         @type  stale_secs: double
         """
@@ -295,6 +285,8 @@ class Graph(object):
 
     def _graph_refresh(self):
         """
+        Refresh the graph.
+
         @return: True if nodes information was updated
         @rtype: bool
         """
@@ -384,7 +376,7 @@ class Graph(object):
 
         nodes = set(nodes)
 
-        srvs = set([s for s, _ in srvs])
+        srvs = {s for s, _ in srvs}
         purge = None
         if nodes ^ self.nn_nodes:
             purge = self.nn_nodes - nodes
@@ -395,13 +387,13 @@ class Graph(object):
             updated = True
 
         if purge:
-            qDebug("following nodes and related edges will be purged: %s", ','.join(purge))
+            qDebug('following nodes and related edges will be purged: %s', ','.join(purge))
             for p in purge:
                 self.nn_edges.delete_all(p)
                 self.nt_edges.delete_all(p)
                 self.nt_all_edges.delete_all(p)
 
-        qDebug("Graph refresh: done, updated[%s]" % updated)
+        qDebug('Graph refresh: done, updated[%s]' % updated)
         return updated
 
     def _mark_bad_node(self, node, reason):
@@ -416,9 +408,7 @@ class Graph(object):
             self.bad_nodes_lock.release()
 
     def _unmark_bad_node(self, node, reason):
-        """
-        Promotes bad node to 'wonky' status.
-        """
+        """Promotes bad node to 'wonky' status."""
         try:
             # bad nodes are updated in a separate thread, so lock
             self.bad_nodes_lock.acquire()
@@ -429,7 +419,8 @@ class Graph(object):
 
     def _node_refresh_businfo(self, node, bad_node=False):
         """
-        Retrieve bus info from the node and update nodes and edges as appropriate
+        Retrieve bus info from the node and update nodes and edges as appropriate.
+
         @param node: node name
         @type  node: str
         @param api: XML-RPC proxy
@@ -444,7 +435,8 @@ class Graph(object):
 
     def _node_refresh(self, node, bad_node=False):
         """
-        Contact node for stats/connectivity information
+        Contact node for stats/connectivity information.
+
         @param node: name of node to contact
         @type  node: str
         @param bad_node: if True, node has connectivity issues
@@ -472,8 +464,9 @@ class Graph(object):
 
     def bad_update(self):
         """
-        Update loop for nodes with bad connectivity. We box them separately
-        so that we can maintain the good performance of the normal update loop.
+        Update loop for nodes with bad connectivity.
+
+        We box them separately so that we can maintain good performance of the normal update loop.
         Once a node is on the bad list it stays there.
         """
         last_node_refresh = self.last_node_refresh
@@ -494,27 +487,28 @@ class Graph(object):
         start_time = time.time()
         while update_queue:
             # figure out the next node to contact
-            next = update_queue.pop()
+            next_update = update_queue.pop()
             # rate limit talking to any particular node
-            if time.time() > (last_node_refresh.get(next, 0.0) + self.node_stale):
-                updated = self._node_refresh(next.name, True) or updated
+            if time.time() > (last_node_refresh.get(next_update, 0.0) + self.node_stale):
+                updated = self._node_refresh(next_update.name, True) or updated
                 # include in random offset (max 1/5th normal update interval)
                 # to help spread out updates
-                last_node_refresh[next] = time.time() + (random.random() * self.node_stale / 5.0)
+                random_delay = random.random() * self.node_stale / 5.0
+                last_node_refresh[next_update] = time.time() + random_delay
                 num_nodes += 1
 
             # small yield to keep from torquing the processor
             time.sleep(0.01)
         end_time = time.time()
-        qDebug("ROS stats (bad nodes) update took %ss" % (end_time - start_time))
+        qDebug('ROS stats (bad nodes) update took %ss' % (end_time - start_time))
         return updated
 
     def update(self):
         """
-        Update all the stats. This method may take awhile to complete as it will
-        communicate with all nodes + master.
-        """
+        Update all the stats.
 
+        This method may take awhile to complete as it will communicate with all nodes.
+        """
         last_node_refresh = self.last_node_refresh
 
         # nodes left to check
@@ -547,18 +541,18 @@ class Graph(object):
                 # contact next node
                 else:
                     # figure out the next node to contact
-                    next = update_queue.pop()
+                    next_update = update_queue.pop()
                     # rate limit talking to any particular node
-                    if time.time() > (last_node_refresh.get(next, 0.0) + self.node_stale):
-                        updated = self._node_refresh(next) or updated
+                    if time.time() > (last_node_refresh.get(next_update, 0.0) + self.node_stale):
+                        updated = self._node_refresh(next_update) or updated
                         # include in random offset (max 1/5th normal update interval)
                         # to help spread out updates
-                        last_node_refresh[next] = \
+                        last_node_refresh[next_update] = \
                             time.time() + (random.random() * self.node_stale / 5.0)
                         num_nodes += 1
 
             # small yield to keep from torquing the processor
             time.sleep(0.01)
         end_time = time.time()
-        qDebug("ROS stats update took %ss" % (end_time - start_time))
+        qDebug('ROS stats update took %ss' % (end_time - start_time))
         return updated
