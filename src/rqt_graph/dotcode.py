@@ -1,48 +1,37 @@
-# Software License Agreement (BSD License)
-#
 # Copyright (c) 2008, Willow Garage, Inc.
-# All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
+# modification, are permitted provided that the following conditions are met:
 #
-#  * Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-#  * Redistributions in binary form must reproduce the above
-#    copyright notice, this list of conditions and the following
-#    disclaimer in the documentation and/or other materials provided
-#    with the distribution.
-#  * Neither the name of Willow Garage, Inc. nor the names of its
-#    contributors may be used to endorse or promote products derived
-#    from this software without specific prior written permission.
+#    * Redistributions of source code must retain the above copyright
+#      notice, this list of conditions and the following disclaimer.
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#    * Redistributions in binary form must reproduce the above copyright
+#      notice, this list of conditions and the following disclaimer in the
+#      documentation and/or other materials provided with the distribution.
+#
+#    * Neither the name of the Willow Garage nor the names of its
+#      contributors may be used to endorse or promote products derived from
+#      this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
 # this is a modified version of rx/rxgraph/src/rxgraph/dotcode.py
 
-import re
 import copy
+import re
 
 from rqt_graph import rosgraph2_impl
-
-try:
-    unicode
-    # we're on python2, or the "unicode" function has already been defined elsewhere
-except NameError:
-    unicode = str
-    # we're on python3
 
 # node/node connectivity
 NODE_NODE_GRAPH = 'node_node'
@@ -57,7 +46,7 @@ QUIET_NAMES = ['/diag_agg', '/runtime_logger', '/pr2_dashboard', '/rviz',
 
 
 def _conv(n):
-    """Convert a node name to a valid dot name, which can't contain the leading space"""
+    """Convert a node name to a valid dot name, which can't contain the leading space."""
     if n.startswith(' '):
         return 't_' + n[1:]
     else:
@@ -68,10 +57,10 @@ def matches_any(name, patternlist):
     if patternlist is None or len(patternlist) == 0:
         return False
     for pattern in patternlist:
-        if unicode(name).strip() == pattern:
+        if str(name).strip() == pattern:
             return True
-        if re.match("^[a-zA-Z0-9_/]+$", pattern) is None:
-            if re.match(unicode(pattern), name.strip()) is not None:
+        if re.match(r'^[a-zA-Z0-9_/]+$', pattern) is None:
+            if re.match(str(pattern), name.strip()) is not None:
                 return True
     return False
 
@@ -86,10 +75,10 @@ class NodeConnections:
 class RosGraphDotcodeGenerator:
 
     # topic/topic -> graph.edge object
-    edges = dict([])
+    edges = {}
 
     # ROS node name -> graph.node object
-    nodes = dict([])
+    nodes = {}
 
     def __init__(self, node):
         self._node = node
@@ -167,7 +156,7 @@ class RosGraphDotcodeGenerator:
             else:
                 penwidth = self._calc_edge_penwidth(sub, topic)
                 color = self._calc_edge_color(sub, topic)
-                label = "(" + unicode(conns) + " connections)"
+                label = '(' + str(conns) + ' connections)'
                 return [label, penwidth, color]
 
         if sub in self.edges and topic in self.edges[sub] and pub in self.edges[sub][topic]:
@@ -175,14 +164,14 @@ class RosGraphDotcodeGenerator:
             color = self._calc_edge_color(sub, topic, pub)
             period = self.edges[sub][topic][pub].period_mean.to_sec()
             if period > 0.0:
-                freq = unicode(round(1.0 / period, 1))
+                freq = str(round(1.0 / period, 1))
             else:
-                freq = "?"
+                freq = '?'
             age = self.edges[sub][topic][pub].stamp_age_mean.to_sec()
-            age_string = ""
+            age_string = ''
             if age > 0.0:
-                age_string = " // " + unicode(round(age, 2) * 1000) + " ms"
-            label = freq + " Hz" + age_string
+                age_string = ' // ' + str(round(age, 2) * 1000) + ' ms'
+            label = freq + ' Hz' + age_string
             return [label, penwidth, color]
         else:
             return [None, None, None]
@@ -194,7 +183,7 @@ class RosGraphDotcodeGenerator:
             pub = edge.start
             [stat_label, penwidth, color] = self._calc_statistic_info(sub, topic, pub)
             if stat_label is not None:
-                temp_label = edge.label + "\\n" + stat_label
+                temp_label = edge.label + '\\n' + stat_label
                 dotcode_factory.add_edge_to_graph(
                     dotgraph,
                     _conv(edge.start),
@@ -215,7 +204,7 @@ class RosGraphDotcodeGenerator:
             topic = edge.start.strip()
             [stat_label, penwidth, color] = self._calc_statistic_info(sub, topic)
             if stat_label is not None:
-                temp_label = edge.label + "\\n" + stat_label
+                temp_label = edge.label + '\\n' + stat_label
                 dotcode_factory.add_edge_to_graph(
                     dotgraph,
                     _conv(edge.start),
@@ -271,25 +260,25 @@ class RosGraphDotcodeGenerator:
                     dotgraph,
                     nodename=_conv(node),
                     nodelabel=node,
-                    shape="ellipse",
-                    url=node + " (DEAD)",
-                    color="red")
+                    shape='ellipse',
+                    url=node + ' (DEAD)',
+                    color='red')
             elif bn.type == rosgraph2_impl.BadNode.WONKY:
                 dotcode_factory.add_node_to_graph(
                     dotgraph,
                     nodename=_conv(node),
                     nodelabel=node,
-                    shape="ellipse",
-                    url=node + " (WONKY)",
-                    color="orange")
+                    shape='ellipse',
+                    url=node + ' (WONKY)',
+                    color='orange')
             else:
                 dotcode_factory.add_node_to_graph(
                     dotgraph,
                     nodename=_conv(node),
                     nodelabel=node,
-                    shape="ellipse",
-                    url=node + " (UNKNOWN)",
-                    color="red")
+                    shape='ellipse',
+                    url=node + ' (UNKNOWN)',
+                    color='red')
         else:
             dotcode_factory.add_node_to_graph(
                 dotgraph,
@@ -310,14 +299,15 @@ class RosGraphDotcodeGenerator:
                 f'incompatible with subscriptions of nodes `{", ".join(sub_node_list)}`'
                 for pub_node, sub_node_list in
                 rosgraphinst.topic_with_qos_incompatibility[label].items()])
-            tooltip_split.extend(['', f'Use `ros2 topic info -v {label}` to check the qos profiles'])
+            tooltip_split.extend(
+                ['', f'Use `ros2 topic info -v {label}` to check the qos profiles'])
             tooltip = '<br/>'.join(tooltip_split)
         dotcode_factory.add_node_to_graph(
             dotgraph,
             nodename=_conv(node),
             nodelabel=label,
             shape='box',
-            url="topic:%s" % label,
+            url='topic:%s' % label,
             color=color,
             tooltip=tooltip)
 
@@ -346,19 +336,16 @@ class RosGraphDotcodeGenerator:
         return self._quiet_filter(edge.start) and self._quiet_filter(edge.end)
 
     def generate_namespaces(self, graph, graph_mode, quiet=False):
-        """
-        Determine the namespaces of the nodes being displayed
-        """
+        """Determine the namespaces of the nodes being displayed."""
         namespaces = []
         nodes_and_namespaces = dict(self._node.get_node_names_and_namespace())
         if graph_mode == NODE_NODE_GRAPH:
             nodes = graph.nn_nodes
             if quiet:
                 nodes = [n for n in nodes if n not in QUIET_NAMES]
-            namespaces = list(set([nodes_and_namespaces[n] for n in nodes]))
+            namespaces = [nodes_and_namespaces[n] for n in nodes]
 
-        elif graph_mode == NODE_TOPIC_GRAPH or \
-                graph_mode == NODE_TOPIC_ALL_GRAPH:
+        elif graph_mode == NODE_TOPIC_GRAPH or graph_mode == NODE_TOPIC_ALL_GRAPH:
             nn_nodes = graph.nn_nodes
             nt_nodes = graph.nt_nodes
             if quiet:
@@ -374,17 +361,17 @@ class RosGraphDotcodeGenerator:
         return list(set(namespaces))
 
     def _filter_orphaned_edges(self, edges, nodes):
-        nodenames = [unicode(n).strip() for n in nodes]
+        nodenames = [str(n).strip() for n in nodes]
         # currently using and rule as the or rule generates orphan nodes with the current logic
         return [e for e in edges if e.start.strip() in nodenames and e.end.strip() in nodenames]
 
     def _filter_orphaned_topics(self, nt_nodes, edges):
-        '''remove topic graphnodes without connected ROS nodes'''
+        """Remove topic graphnodes without connected ROS nodes."""
         removal_nodes = []
         for n in nt_nodes:
             keep = False
             for e in edges:
-                if e.start.strip() == unicode(n).strip() or e.end.strip() == unicode(n).strip():
+                if e.start.strip() == str(n).strip() or e.end.strip() == str(n).strip():
                     keep = True
                     break
             if not keep:
@@ -394,8 +381,11 @@ class RosGraphDotcodeGenerator:
         return nt_nodes
 
     def _split_filter_string(self, ns_filter):
-        '''splits a string after each comma, and treats tokens with leading dash as exclusions.
-        Adds .* as inclusion if no other inclusion option was given'''
+        """
+        Split a string after each comma, and treat tokens with leading dash as exclusions.
+
+        Add .* as inclusion if no other inclusion option was given.
+        """
         includes = []
         excludes = []
         for name in ns_filter.split(','):
@@ -408,9 +398,7 @@ class RosGraphDotcodeGenerator:
         return includes, excludes
 
     def _get_node_edge_map(self, edges):
-        '''
-        returns a dict mapping node name to edge objects partitioned in incoming and outgoing edges
-        '''
+        """Return a mapping of node name to edges partitioned in incoming and outgoing edges."""
         node_connections = {}
         for edge in edges:
             if edge.start not in node_connections:
@@ -428,13 +416,13 @@ class RosGraphDotcodeGenerator:
             node_connections,
             hide_single_connection_topics,
             hide_dead_end_topics):
-        '''
-        removes certain ending topic nodes and their edges from list of nodes and edges
+        """
+        Remove certain ending topic nodes and their edges from list of nodes and edges.
 
         @param hide_single_connection_topics:
             if true removes topics that are only published/subscribed by one node
         @param hide_dead_end_topics: if true removes topics having only publishers
-        '''
+        """
         if not hide_dead_end_topics and not hide_single_connection_topics:
             return nodes_in, edges_in
         # do not manipulate incoming structures
@@ -460,24 +448,27 @@ class RosGraphDotcodeGenerator:
         return nodes, edges
 
     def _accumulate_action_topics(self, nodes_in, edges_in, node_connections):
-        '''takes topic nodes, edges and node connections.
+        """
+        Take topic nodes, edges and node connections and return action topics.
+
         Returns topic nodes where action topics have been removed,
         edges where the edges to action topics have been removed, and
-        a map with the connection to each virtual action topic node'''
+        a map with the connection to each virtual action topic node.
+        """
         removal_nodes = []
         action_nodes = {}
         # do not manipulate incoming structures
         nodes = copy.copy(nodes_in)
         edges = copy.copy(edges_in)
         for n in nodes:
-            if unicode(n).endswith('/feedback'):
-                prefix = unicode(n)[:-len('/feedback')].strip()
+            if str(n).endswith('/feedback'):
+                prefix = str(n)[:-len('/feedback')].strip()
                 action_topic_nodes = []
-                action_topic_edges_out = list()
-                action_topic_edges_in = list()
+                action_topic_edges_out = []
+                action_topic_edges_in = []
                 for suffix in ['/status', '/result', '/goal', '/cancel', '/feedback']:
                     for n2 in nodes:
-                        if unicode(n2).strip() == prefix + suffix:
+                        if str(n2).strip() == prefix + suffix:
                             action_topic_nodes.append(n2)
                             if n2 in node_connections:
                                 action_topic_edges_out.extend(node_connections[n2].outgoing)
@@ -510,7 +501,7 @@ class RosGraphDotcodeGenerator:
         namespace_clusters = {}
         if cluster_namespaces_level > 0:
             for node in node_list:
-                if unicode(node.strip()).count('/') > 2:
+                if str(node.strip()).count('/') > 2:
                     for i in range(
                             2, min(2 + cluster_namespaces_level, len(node.strip().split('/')))):
                         namespace = '/'.join(node.strip().split('/')[:i])
@@ -532,7 +523,7 @@ class RosGraphDotcodeGenerator:
                                         rank=rank,
                                         rankdir=orientation,
                                         simplify=simplify)
-                elif unicode(node.strip()).count('/') == 2:
+                elif str(node.strip()).count('/') == 2:
                     namespace = '/'.join(node.strip().split('/')[0:2])
                     if namespace not in namespace_clusters:
                         namespace_clusters[namespace] = dotcode_factory.add_subgraph_to_graph(
@@ -544,10 +535,13 @@ class RosGraphDotcodeGenerator:
         return namespace_clusters
 
     def _group_tf_nodes(self, nodes_in, edges_in, node_connections):
-        '''takes topic nodes, edges and node connections.
+        """
+        Take topic nodes, edges and node connections, and return tf topics.
+
         Returns topic nodes where tf topics have been removed,
         edges where the edges to tf topics have been removed, and
-        a map with all the connections to the resulting tf group node'''
+        a map with all the connections to the resulting tf group node.
+        """
         removal_nodes = []
         tf_topic_edges_in = []
         tf_topic_edges_out = []
@@ -555,7 +549,7 @@ class RosGraphDotcodeGenerator:
         nodes = copy.copy(nodes_in)
         edges = copy.copy(edges_in)
         for n in nodes:
-            if unicode(n).strip() in ['/tf', '/tf_static'] and n in node_connections:
+            if str(n).strip() in ['/tf', '/tf_static'] and n in node_connections:
                 tf_topic_edges_in.extend(
                     [x for x in node_connections[n].incoming if x in edges and x.end in nodes])
                 tf_topic_edges_out.extend(
@@ -577,24 +571,27 @@ class RosGraphDotcodeGenerator:
         return nodes, edges, {'outgoing': tf_topic_edges_out, 'incoming': tf_topic_edges_in}
 
     def _accumulate_image_topics(self, nodes_in, edges_in, node_connections):
-        '''takes topic nodes, edges and node connections.
+        """
+        Take topic nodes, edges and node connections, and return image topics.
+
         Returns topic nodes where image topics have been removed,
         edges where the edges to image topics have been removed, and
-        a map with the connection to each virtual image topic node'''
+        a map with the connection to each virtual image topic node.
+        """
         removal_nodes = []
         image_nodes = {}
         # do not manipulate incoming structures
         nodes = copy.copy(nodes_in)
         edges = copy.copy(edges_in)
         for n in nodes:
-            if unicode(n).endswith('/compressed'):
-                prefix = unicode(n)[:-len('/compressed')].strip()
+            if str(n).endswith('/compressed'):
+                prefix = str(n)[:-len('/compressed')].strip()
                 image_topic_nodes = []
-                image_topic_edges_out = list()
-                image_topic_edges_in = list()
+                image_topic_edges_out = []
+                image_topic_edges_in = []
                 for suffix in ['/compressed', '/compressedDepth', '/theora', '']:
                     for n2 in nodes:
-                        if unicode(n2).strip() == prefix + suffix:
+                        if str(n2).strip() == prefix + suffix:
                             image_topic_nodes.append(n2)
                             if n2 in node_connections:
                                 image_topic_edges_out.extend(node_connections[n2].outgoing)
@@ -632,9 +629,9 @@ class RosGraphDotcodeGenerator:
             # parameter_updates is the ROS 1 dynamic reconfigure topic
             # parameter_events is the ROS 2 parameter event topic
             if hide_dynamic_reconfigure:
-                suffix = unicode(n).rsplit('/', 1)[-1]
+                suffix = str(n).rsplit('/', 1)[-1]
                 if suffix in ('parameter_updates', 'parameter_events'):
-                    prefix = unicode(n).rsplit('/', 1)[0].strip()
+                    prefix = str(n).rsplit('/', 1)[0].strip()
                     if prefix == 'parameter_updates':
                         suffixes = ['/parameter_updates', '/parameter_descriptions']
                     else:
@@ -642,17 +639,18 @@ class RosGraphDotcodeGenerator:
                     dynamic_reconfigure_topic_nodes = []
                     for suffix in suffixes:
                         for n2 in nodes:
-                            if unicode(n2).strip() == prefix + suffix:
+                            if str(n2).strip() == prefix + suffix:
                                 dynamic_reconfigure_topic_nodes.append(n2)
                     if len(dynamic_reconfigure_topic_nodes) == len(suffixes):
                         for n1 in dynamic_reconfigure_topic_nodes:
-                            if n1 in node_connections:
-                                for e in node_connections[n1].outgoing + node_connections[n1].incoming:
-                                    if e in edges:
-                                        edges.remove(e)
                             removal_nodes.append(n1)
+                            if n1 not in node_connections:
+                                continue
+                            for e in node_connections[n1].outgoing + node_connections[n1].incoming:
+                                if e in edges:
+                                    edges.remove(e)
                         continue
-            if hide_tf_nodes and unicode(n).strip() in ['/tf', '/tf_static']:
+            if hide_tf_nodes and str(n).strip() in ['/tf', '/tf_static']:
                 if n in node_connections:
                     for e in node_connections[n].outgoing + node_connections[n].incoming:
                         if e in edges:
@@ -686,9 +684,7 @@ class RosGraphDotcodeGenerator:
         hide_tf_nodes=False,
         group_image_nodes=False,
             hide_dynamic_reconfigure=False):
-        """
-        See generate_dotcode
-        """
+        """See generate_dotcode."""
         includes, excludes = self._split_filter_string(ns_filter)
         topic_includes, topic_excludes = self._split_filter_string(topic_filter)
 
@@ -704,9 +700,9 @@ class RosGraphDotcodeGenerator:
 
         # create the edge definitions, unwrap EdgeList objects into python lists
         if graph_mode == NODE_TOPIC_GRAPH:
-            edges = [e for e in rosgraphinst.nt_edges]
+            edges = list(rosgraphinst.nt_edges)
         else:
-            edges = [e for e in rosgraphinst.nt_all_edges]
+            edges = list(rosgraphinst.nt_all_edges)
 
         # for accumulating actions topics
         action_nodes = {}
@@ -716,9 +712,9 @@ class RosGraphDotcodeGenerator:
         tf_connections = None
 
         if (hide_single_connection_topics or
-            hide_dead_end_topics or accumulate_actions or
-            group_tf_nodes or hide_tf_nodes or
-            group_image_nodes or hide_dynamic_reconfigure):
+                hide_dead_end_topics or accumulate_actions or
+                group_tf_nodes or hide_tf_nodes or
+                group_image_nodes or hide_dynamic_reconfigure):
             # maps outgoing and incoming edges to nodes
             node_connections = self._get_node_edge_map(edges)
 
@@ -790,10 +786,10 @@ class RosGraphDotcodeGenerator:
         for n in nt_nodes or []:
             # cluster topics with same namespace
             if cluster_namespaces_level > 0 and \
-                    unicode(n).strip().count('/') > 1 and \
+                    str(n).strip().count('/') > 1 and \
                     len(n.strip().split('/')[1]) > 0:
                 if n.count('/') <= cluster_namespaces_level:
-                    namespace = unicode('/'.join(n.strip().split('/')[:-1]))
+                    namespace = str('/'.join(n.strip().split('/')[:-1]))
                 else:
                     namespace = '/'.join(n.strip().split('/')[:cluster_namespaces_level + 1])
                 self._add_topic_node(
@@ -811,10 +807,10 @@ class RosGraphDotcodeGenerator:
                 [img_prefix + IMAGE_TOPICS_SUFFIX for img_prefix, _ in image_nodes.items()]:
             # cluster topics with same namespace
             if cluster_namespaces_level > 0 and \
-                    unicode(n).strip().count('/') > 1 and \
-                    len(unicode(n).strip().split('/')[1]) > 0:
+                    str(n).strip().count('/') > 1 and \
+                    len(str(n).strip().split('/')[1]) > 0:
                 if n.strip().count('/') <= cluster_namespaces_level:
-                    namespace = unicode('/'.join(n.strip().split('/')[:-1]))
+                    namespace = str('/'.join(n.strip().split('/')[:-1]))
                 else:
                     namespace = '/'.join(n.strip().split('/')[:cluster_namespaces_level + 1])
                 self._add_topic_node_group(
@@ -840,7 +836,7 @@ class RosGraphDotcodeGenerator:
                     n.strip().count('/') > 1 and \
                     len(n.strip().split('/')[1]) > 0:
                 if n.count('/') <= cluster_namespaces_level:
-                    namespace = unicode('/'.join(n.strip().split('/')[:-1]))
+                    namespace = str('/'.join(n.strip().split('/')[:-1]))
                 else:
                     namespace = '/'.join(n.strip().split('/')[:cluster_namespaces_level + 1])
                 self._add_node(
@@ -909,6 +905,8 @@ class RosGraphDotcodeGenerator:
         group_image_nodes=False,
             hide_dynamic_reconfigure=False):
         """
+        Generate the dotcode.
+
         @param rosgraphinst: RosGraph instance
         @param ns_filter: nodename filter
         @type  ns_filter: string
