@@ -275,7 +275,7 @@ class Graph(object):
         self.topic_with_qos_incompatibility = defaultdict(lambda: defaultdict(list))
 
         # same type as topic_with_qos_incompatibility
-        self.topic_with_type_incompatibility : dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
+        self.topic_with_type_incompatibility = defaultdict(lambda: defaultdict(list))
 
     def set_node_stale(self, stale_secs):
         """
@@ -352,11 +352,15 @@ class Graph(object):
                         self.topic_with_qos_incompatibility[topic][pub_node].append(sub_node)
 
         for topic_name, topic_subscribers in subscriber_topic_types.items():
-            for subscriber_name, subscriber_types in topic_subscribers.items():
+            for subscriber, subscriber_types in topic_subscribers.items():
                 for subscriber_type in subscriber_types:
-                    for publisher_name, publisher_types in publisher_topic_types[topic_name].items():
+                    for publisher, publisher_types in publisher_topic_types[
+                        topic_name
+                    ].items():
                         if subscriber_type not in publisher_types:
-                            self.topic_with_type_incompatibility[topic_name][publisher_name].append(subscriber_name)
+                            self.topic_with_type_incompatibility[topic_name][
+                                publisher
+                            ].append(subscriber)
 
         pubs = list(publishers.items())
         subs = list(subscriptions.items())
