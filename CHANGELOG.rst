@@ -2,6 +2,12 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add in standard tests. (`#104 <https://github.com/ros-visualization/rqt_graph/issues/104>`_)
+* Remove CODEOWNERS (`#102 <https://github.com/ros-visualization/rqt_graph/issues/102>`_)
+* Contributors: Alejandro Hernández Cordero, Chris Lalancette
+
 1.6.1 (2024-06-17)
 ------------------
 * Fixed fit_in_view icon button (`#95 <https://github.com/ros-visualization/rqt_graph/issues/95>`_)
