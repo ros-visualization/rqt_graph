@@ -2,8 +2,8 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2025-02-02)
+------------------
 * Add in standard tests. (`#104 <https://github.com/ros-visualization/rqt_graph/issues/104>`_)
 * Remove CODEOWNERS (`#102 <https://github.com/ros-visualization/rqt_graph/issues/102>`_)
 * Contributors: Alejandro Hernández Cordero, Chris Lalancette
