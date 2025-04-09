@@ -2,6 +2,12 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Import setup from setuptools instead of distutils.core (`#84 <https://github.com/ros-visualization/rqt_graph/issues/84>`_)
+* Update maintainers (`#54 <https://github.com/ros-visualization/rqt_graph/issues/54>`_)
+* Contributors: Arne Hitzmann, Matthijs van der Burgh, Michael Jeronimo
+
 0.4.14 (2020-05-22)
 -------------------
 * readd rqt_graph global executable, regression from 0.4.13 (`#45 <https://github.com/ros-visualization/rqt_graph/issues/45>`_)
