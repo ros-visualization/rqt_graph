@@ -2,8 +2,8 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.15 (2025-04-09)
+-------------------
 * Import setup from setuptools instead of distutils.core (`#84 <https://github.com/ros-visualization/rqt_graph/issues/84>`_)
 * Update maintainers (`#54 <https://github.com/ros-visualization/rqt_graph/issues/54>`_)
 * Contributors: Arne Hitzmann, Matthijs van der Burgh, Michael Jeronimo
