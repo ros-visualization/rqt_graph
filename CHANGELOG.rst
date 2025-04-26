@@ -2,6 +2,11 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Bump cmake_minimum_required to avoid deprecation (`#106 <https://github.com/ros-visualization/rqt_graph/issues/106>`_)
+* Contributors: Arne Hitzmann
+
 0.4.15 (2025-04-09)
 -------------------
 * Import setup from setuptools instead of distutils.core (`#84 <https://github.com/ros-visualization/rqt_graph/issues/84>`_)
