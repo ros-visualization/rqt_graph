@@ -2,8 +2,8 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.16 (2025-04-26)
+-------------------
 * Bump cmake_minimum_required to avoid deprecation (`#106 <https://github.com/ros-visualization/rqt_graph/issues/106>`_)
 * Contributors: Arne Hitzmann
 
