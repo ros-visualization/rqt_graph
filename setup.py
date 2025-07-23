@@ -12,7 +12,6 @@ setup(
         ('share/' + package_name + '/resource', ['resource/RosGraph.ui']),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name, ['plugin.xml']),
-        ('lib/' + package_name, ['scripts/rqt_graph']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
