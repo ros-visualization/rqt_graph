@@ -314,10 +314,10 @@ class Graph(object):
                 publisher_topic_types[topic_name][node_name].append(publisher_type)
                 publisher_topic_names.add(topic_name)
 
-            for topic_name, publisher_type in \
+            for topic_name, subscriber_type in \
                     self._node.get_subscriber_names_and_types_by_node(name, namespace):
                 subscriptions[topic_name].append(node_name)
-                subscriber_topic_types[topic_name][node_name].append(publisher_type)
+                subscriber_topic_types[topic_name][node_name].append(subscriber_type)
                 subscriber_topic_names.add(topic_name)
 
             for service_name, service_type in \
