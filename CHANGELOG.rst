@@ -2,6 +2,58 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.8.0 (2025-04-28)
+------------------
+
+1.7.0 (2025-02-02)
+------------------
+* Add in standard tests. (`#104 <https://github.com/ros-visualization/rqt_graph/issues/104>`_)
+* Remove CODEOWNERS (`#102 <https://github.com/ros-visualization/rqt_graph/issues/102>`_)
+* Contributors: Alejandro Hernández Cordero, Chris Lalancette
+
+1.6.1 (2024-06-17)
+------------------
+* Fixed fit_in_view icon button (`#95 <https://github.com/ros-visualization/rqt_graph/issues/95>`_)
+* Contributors: Alejandro Hernández Cordero
+
+1.6.0 (2024-04-26)
+------------------
+
+1.5.3 (2024-04-16)
+------------------
+* Update maintainer list in package.xml files (`#92 <https://github.com/ros-visualization/rqt_graph/issues/92>`_)
+* Contributors: Michael Jeronimo
+
+1.5.2 (2024-02-07)
+------------------
+* Add a test dependency on python3-pytest. (`#91 <https://github.com/ros-visualization/rqt_graph/issues/91>`_)
+* Contributors: Chris Lalancette
+
+1.5.1 (2023-05-11)
+------------------
+* Refresh rosgraph when params checkbox is clicked (`#86 <https://github.com/ros-visualization/rqt_graph/issues/86>`_)
+* Contributors: Yadunund
+
+1.5.0 (2023-04-28)
+------------------
+
+1.4.1 (2023-02-14)
+------------------
+* [rolling] Update maintainers - 2022-11-07 (`#83 <https://github.com/ros-visualization/rqt_graph/issues/83>`_)
+* Contributors: Audrow Nash, Chris Lalancette
+
+1.4.0 (2022-09-13)
+------------------
+* Minor cleanup (`#80 <https://github.com/ros-visualization/rqt_graph/issues/80>`_)
+* Mirror rolling to galactic-devel
+* graph load/save into DOT file corrections for py3 (`#78 <https://github.com/ros-visualization/rqt_graph/issues/78>`_)
+* Contributors: Audrow Nash, David V. Lu!!, mergify[bot]
+
+1.2.1 (2022-01-14)
+------------------
+* Fix quiet filtering for node_topic graphs (`#70 <https://github.com/ros-visualization/rqt_graph/issues/70>`_)
+* Contributors: David V. Lu!!
+
 1.2.0 (2021-03-30)
 ------------------
 * Make topics that have qos incompatibilities red in the graph, add information to the node tooltip (`#61 <https://github.com/ros-visualization/rqt_graph/issues/61>`_)
@@ -87,7 +139,7 @@ Changelog for package rqt_graph
 
 0.3.13 (2016-03-08)
 -------------------
-* Remove repeated prefices from buttons
+* Remove repeated prefixes from buttons
 * Prefix all node and topic names with `n\_` and `t\_` respectively, to allow dot to distinguish them
 * Contributors: Eric Wieser
 
