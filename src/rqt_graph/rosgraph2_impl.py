@@ -286,6 +286,9 @@ class Graph(object):
         # {topic_name: {publisher_node_name: [subscription_node_name, ...], ...}, ...}
         self.topic_with_qos_incompatibility = defaultdict(lambda: defaultdict(list))
 
+        # same type as topic_with_qos_incompatibility
+        self.topic_with_type_incompatibility = defaultdict(lambda: defaultdict(list))
+
     def set_node_stale(self, stale_secs):
         """
         @param stale_secs: seconds that data is considered fresh
@@ -306,17 +309,23 @@ class Graph(object):
         publisher_topic_names = set()
         subscriber_topic_names = set()
 
+        # {topic_name: {node_name: [type1, ...]}}
+        publisher_topic_types = defaultdict(lambda: defaultdict(list))
+        subscriber_topic_types = defaultdict(lambda: defaultdict(list))
+
         for name, namespace in self._node.get_node_names_and_namespaces():
             node_name = namespace + name if namespace.endswith('/') else namespace + '/' + name
 
-            for topic_name, topic_type in \
+            for topic_name, publisher_type in \
                     self._node.get_publisher_names_and_types_by_node(name, namespace):
                 publishers[topic_name].append(node_name)
+                publisher_topic_types[topic_name][node_name].append(publisher_type)
                 publisher_topic_names.add(topic_name)
 
-            for topic_name, topic_type in \
+            for topic_name, subscriber_type in \
                     self._node.get_subscriber_names_and_types_by_node(name, namespace):
                 subscriptions[topic_name].append(node_name)
+                subscriber_topic_types[topic_name][node_name].append(subscriber_type)
                 subscriber_topic_names.add(topic_name)
 
             for service_name, service_type in \
@@ -349,6 +358,17 @@ class Graph(object):
                         for sub_qos in sub_qos_list
                     ):
                         self.topic_with_qos_incompatibility[topic][pub_node].append(sub_node)
+
+        for topic_name, topic_subscribers in subscriber_topic_types.items():
+            for subscriber, subscriber_types in topic_subscribers.items():
+                for subscriber_type in subscriber_types:
+                    for publisher, publisher_types in publisher_topic_types[
+                        topic_name
+                    ].items():
+                        if subscriber_type not in publisher_types:
+                            self.topic_with_type_incompatibility[topic_name][
+                                publisher
+                            ].append(subscriber)
 
         pubs = list(publishers.items())
         subs = list(subscriptions.items())

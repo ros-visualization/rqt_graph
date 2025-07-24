@@ -312,6 +312,17 @@ class RosGraphDotcodeGenerator:
                 rosgraphinst.topic_with_qos_incompatibility[label].items()])
             tooltip_split.extend(['', f'Use `ros2 topic info -v {label}` to check the qos profiles'])
             tooltip = '<br/>'.join(tooltip_split)
+        if label in rosgraphinst.topic_with_type_incompatibility:
+            color = 'red'
+            tooltip_split = ['Found type incompatibilities:', '']
+            tooltip_split.extend([
+                f'- Publisher of node `{pub_node}` '
+                f'incompatible with subscriptions of nodes `{", ".join(sub_node_list)}`'
+                for pub_node, sub_node_list in
+                rosgraphinst.topic_with_type_incompatibility[label].items()])
+            tooltip_split.extend(
+                ['', f'Use `ros2 topic info -v {label}` to check types'])
+            tooltip = '<br/>'.join(tooltip_split)
         dotcode_factory.add_node_to_graph(
             dotgraph,
             nodename=_conv(node),
