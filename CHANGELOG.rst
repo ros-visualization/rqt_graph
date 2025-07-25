@@ -2,6 +2,12 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.5 (2025-07-25)
+------------------
+* add warning for type incompatibilities (backport `#105 <https://github.com/ros-visualization/rqt_graph/issues/105>`_) (`#108 <https://github.com/ros-visualization/rqt_graph/issues/108>`_)
+* Remove CODEOWNERS (backport `#102 <https://github.com/ros-visualization/rqt_graph/issues/102>`_) (`#103 <https://github.com/ros-visualization/rqt_graph/issues/103>`_)
+* Contributors: Jonas Otto, mergify[bot]
+
 1.5.4 (2024-05-20)
 ------------------
 * Fixed fit_in_view icon button (backport `#95 <https://github.com/ros-visualization/rqt_graph/issues/95>`_) (`#96 <https://github.com/ros-visualization/rqt_graph/issues/96>`_)
