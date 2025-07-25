@@ -2,6 +2,13 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.8.1 (2025-07-4)
+------------------
+* add warning for type incompatibilities (`#105 <https://github.com/ros-visualization/rqt_graph/issues/105>`_)
+* Remove rqt_graph script. (`#66 <https://github.com/ros-visualization/rqt_graph/issues/66>`_)
+* fix setuptools deprecations (`#107 <https://github.com/ros-visualization/rqt_graph/issues/107>`_)
+* Contributors: Chris Lalancette, Jonas Otto, mosfet80
+
 1.8.0 (2025-04-28)
 ------------------
 
