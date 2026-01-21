@@ -2,6 +2,14 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix setuptools deprecations (backport `#107 <https://github.com/ros-visualization/rqt_graph/issues/107>`_) (`#112 <https://github.com/ros-visualization/rqt_graph/issues/112>`_)
+  fix setuptools deprecations (`#107 <https://github.com/ros-visualization/rqt_graph/issues/107>`_)
+  (cherry picked from commit e72fdcb4a2c26781cc25415549f73ecd5f1c7419)
+  Co-authored-by: mosfet80 <10235105+mosfet80@users.noreply.github.com>
+* Contributors: mergify[bot]
+
 1.5.5 (2025-07-25)
 ------------------
 * add warning for type incompatibilities (backport `#105 <https://github.com/ros-visualization/rqt_graph/issues/105>`_) (`#108 <https://github.com/ros-visualization/rqt_graph/issues/108>`_)
