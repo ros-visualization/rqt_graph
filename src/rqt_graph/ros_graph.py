@@ -33,7 +33,7 @@ import os
 from ament_index_python import get_resource
 from python_qt_binding import loadUi
 from python_qt_binding.QtCore import QAbstractListModel, QFile, QIODevice, Qt, Signal
-from python_qt_binding.QtGui import QIcon, QImage, QPainter
+from python_qt_binding.QtGui import QColorConstants, QIcon, QImage, QPainter
 from python_qt_binding.QtSvg import QSvgGenerator
 from python_qt_binding.QtWidgets import QCompleter, QFileDialog, QGraphicsScene, QWidget
 
@@ -123,7 +123,7 @@ class RosGraph(Plugin):
                 self._widget.windowTitle() + (' (%d)' % context.serial_number()))
 
         self._scene = QGraphicsScene()
-        self._scene.setBackgroundBrush(Qt.white)
+        self._scene.setBackgroundBrush(QColorConstants.White)
         self._widget.graphics_view.setScene(self._scene)
 
         self._widget.graph_type_combo_box.insertItem(0, self.tr('Nodes only'), NODE_NODE_GRAPH)
@@ -136,18 +136,18 @@ class RosGraph(Plugin):
 
         self.node_completionmodel = NamespaceCompletionModel(self._widget.filter_line_edit, False)
         completer = RepeatedWordCompleter(self.node_completionmodel, self)
-        completer.setCompletionMode(QCompleter.PopupCompletion)
+        completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         completer.setWrapAround(True)
-        completer.setCaseSensitivity(Qt.CaseInsensitive)
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self._widget.filter_line_edit.editingFinished.connect(self._refresh_rosgraph)
         self._widget.filter_line_edit.setCompleter(completer)
 
         self.topic_completionmodel = NamespaceCompletionModel(
             self._widget.topic_filter_line_edit, False)
         topic_completer = RepeatedWordCompleter(self.topic_completionmodel, self)
-        topic_completer.setCompletionMode(QCompleter.PopupCompletion)
+        topic_completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         topic_completer.setWrapAround(True)
-        topic_completer.setCaseSensitivity(Qt.CaseInsensitive)
+        topic_completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self._widget.topic_filter_line_edit.editingFinished.connect(self._refresh_rosgraph)
         self._widget.topic_filter_line_edit.setCompleter(topic_completer)
 
@@ -180,7 +180,7 @@ class RosGraph(Plugin):
         self._widget.save_as_image_push_button.pressed.connect(self._save_image)
 
         self._update_rosgraph()
-        self._deferred_fit_in_view.connect(self._fit_in_view, Qt.QueuedConnection)
+        self._deferred_fit_in_view.connect(self._fit_in_view, Qt.ConnectionType.QueuedConnection)
         self._deferred_fit_in_view.emit()
 
         context.add_widget(self._widget)
@@ -391,7 +391,8 @@ class RosGraph(Plugin):
         self._update_graph_view(dotcode.decode('utf-8'))
 
     def _fit_in_view(self):
-        self._widget.graphics_view.fitInView(self._scene.itemsBoundingRect(), Qt.KeepAspectRatio)
+        self._widget.graphics_view.fitInView(
+            self._scene.itemsBoundingRect(), Qt.AspectRatioMode.KeepAspectRatio)
 
     def _save_dot(self):
         file_name, _ = QFileDialog.getSaveFileName(
