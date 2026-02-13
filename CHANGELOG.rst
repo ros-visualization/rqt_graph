@@ -2,6 +2,11 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix setuptools deprecations (backport `#107 <https://github.com/ros-visualization/rqt_graph/issues/107>`_) (`#113 <https://github.com/ros-visualization/rqt_graph/issues/113>`_)
+* Contributors: mergify[bot]
+
 1.3.1 (2024-05-15)
 ------------------
 * Fixed fit_in_view icon button (backport `#95 <https://github.com/ros-visualization/rqt_graph/issues/95>`_) (`#97 <https://github.com/ros-visualization/rqt_graph/issues/97>`_)
