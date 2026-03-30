@@ -394,7 +394,7 @@
    <item>
     <widget class="InteractiveGraphicsView" name="graphics_view">
      <property name="renderHints">
-      <set>QPainter::Antialiasing|QPainter::HighQualityAntialiasing|QPainter::SmoothPixmapTransform|QPainter::TextAntialiasing</set>
+      <set>QPainter::Antialiasing|QPainter::SmoothPixmapTransform|QPainter::TextAntialiasing</set>
      </property>
      <property name="resizeAnchor">
       <enum>QGraphicsView::AnchorViewCenter</enum>

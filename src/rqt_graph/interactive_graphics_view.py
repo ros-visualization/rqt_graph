@@ -47,10 +47,10 @@ class InteractiveGraphicsView(QGraphicsView):
     def mousePressEvent(self, mouse_event):
         self.last_pan_pt = mouse_event.pos()
         self._last_scene_center = self._map_to_scene_f(QRectF(self.frameRect()).center())
-        self.setCursor(Qt.ClosedHandCursor)
+        self.setCursor(Qt.CursorShape.ClosedHandCursor)
 
     def mouseReleaseEvent(self, mouse_event):
-        self.setCursor(Qt.OpenHandCursor)
+        self.setCursor(Qt.CursorShape.OpenHandCursor)
         self.last_pan_pt = None
 
     def mouseMoveEvent(self, mouse_event):
@@ -63,7 +63,7 @@ class InteractiveGraphicsView(QGraphicsView):
         QGraphicsView.mouseMoveEvent(self, mouse_event)
 
     def wheelEvent(self, wheel_event):
-        if wheel_event.modifiers() == Qt.NoModifier:
+        if wheel_event.modifiers() == Qt.KeyboardModifier.NoModifier:
             try:
                 delta = wheel_event.angleDelta().y()
             except AttributeError:
