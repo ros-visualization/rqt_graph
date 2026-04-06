@@ -2,6 +2,12 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.8.2 (2026-04-06)
+------------------
+* Fix: broken dependency (`#115 <https://github.com/ros-visualization/rqt_graph//issues/115>`_)
+* Support Qt6 (`#114 <https://github.com/ros-visualization/rqt_graph//issues/114>`_)
+* Contributors: Alejandro Hernández Cordero, Matthew Foran
+
 1.8.1 (2025-07-4)
 ------------------
 * add warning for type incompatibilities (`#105 <https://github.com/ros-visualization/rqt_graph/issues/105>`_)
