@@ -44,8 +44,16 @@ class InteractiveGraphicsView(QGraphicsView):
         self.last_pan_pt = None
         self._last_scene_center = None
 
+    @staticmethod
+    def _event_pos(event):
+        # Qt6 removed pos(); use position().toPoint(). Fall back to pos() on Qt5.
+        try:
+            return event.position().toPoint()
+        except AttributeError:
+            return event.pos()
+
     def mousePressEvent(self, mouse_event):
-        self.last_pan_pt = mouse_event.pos()
+        self.last_pan_pt = self._event_pos(mouse_event)
         self._last_scene_center = self._map_to_scene_f(QRectF(self.frameRect()).center())
         self.setCursor(Qt.CursorShape.ClosedHandCursor)
 
@@ -55,11 +63,12 @@ class InteractiveGraphicsView(QGraphicsView):
 
     def mouseMoveEvent(self, mouse_event):
         if self.last_pan_pt is not None:
-            delta_scene = self.mapToScene(mouse_event.pos()) - self.mapToScene(self.last_pan_pt)
+            current_pos = self._event_pos(mouse_event)
+            delta_scene = self.mapToScene(current_pos) - self.mapToScene(self.last_pan_pt)
             if not delta_scene.isNull():
                 self.centerOn(self._last_scene_center - delta_scene)
                 self._last_scene_center -= delta_scene
-            self.last_pan_pt = mouse_event.pos()
+            self.last_pan_pt = current_pos
         QGraphicsView.mouseMoveEvent(self, mouse_event)
 
     def wheelEvent(self, wheel_event):
@@ -69,13 +78,14 @@ class InteractiveGraphicsView(QGraphicsView):
             except AttributeError:
                 delta = wheel_event.delta()
             delta = max(min(delta, 480), -480)
-            mouse_before_scale_in_scene = self.mapToScene(wheel_event.pos())
+            wheel_pos = self._event_pos(wheel_event)
+            mouse_before_scale_in_scene = self.mapToScene(wheel_pos)
 
             scale_factor = 1 + (0.2 * (delta / 120.0))
             scaling = QTransform(scale_factor, 0, 0, scale_factor, 0, 0)
             self.setTransform(self.transform() * scaling)
 
-            mouse_after_scale_in_scene = self.mapToScene(wheel_event.pos())
+            mouse_after_scale_in_scene = self.mapToScene(wheel_pos)
             center_in_scene = self.mapToScene(self.frameRect().center())
             self.centerOn(
                 center_in_scene + mouse_before_scale_in_scene - mouse_after_scale_in_scene)
