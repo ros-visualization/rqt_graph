@@ -85,7 +85,8 @@ class NamespaceCompletionModel(QAbstractListModel):
         return len(self.names)
 
     def data(self, index, role):
-        if index.isValid() and (role == Qt.DisplayRole or role == Qt.EditRole):
+        if index.isValid() and (
+                role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole):
             return self.names[index.row()]
         return None
 
@@ -401,7 +402,7 @@ class RosGraph(Plugin):
             return
 
         handle = QFile(file_name)
-        if not handle.open(QIODevice.WriteOnly | QIODevice.Text):
+        if not handle.open(QIODevice.OpenModeFlag.WriteOnly | QIODevice.OpenModeFlag.Text):
             return
 
         handle.write(self._current_dotcode.encode())
@@ -419,7 +420,7 @@ class RosGraph(Plugin):
         generator.setSize((self._scene.sceneRect().size() * 2.0).toSize())
 
         painter = QPainter(generator)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         self._scene.render(painter)
         painter.end()
 
@@ -431,9 +432,9 @@ class RosGraph(Plugin):
             return
 
         img = QImage((self._scene.sceneRect().size() * 2.0)
-                     .toSize(), QImage.Format_ARGB32_Premultiplied)
+                     .toSize(), QImage.Format.Format_ARGB32_Premultiplied)
         painter = QPainter(img)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         self._scene.render(painter)
         painter.end()
         img.save(file_name)
