@@ -2,6 +2,11 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.1 (2026-06-17)
+------------------
+* Removed Python2 references and Qt6 fixes (`#118 <https://github.com/ros-visualization/rqt_graph/issues/118>`_)
+* Contributors: Alejandro Hernández Cordero
+
 2.0.0 (2026-05-06)
 ------------------
 * Support Wheel event in qt6 (`#116 <https://github.com/ros-visualization/rqt_graph/issues/116>`_)
