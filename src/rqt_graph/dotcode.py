@@ -74,14 +74,12 @@ class NodeConnections:
 
 class RosGraphDotcodeGenerator:
 
-    # topic/topic -> graph.edge object
-    edges = {}
-
-    # ROS node name -> graph.node object
-    nodes = {}
-
     def __init__(self, node):
         self._node = node
+        # topic/topic -> graph.edge object
+        self.edges = {}
+        # ROS node name -> graph.node object
+        self.nodes = {}
 
     def _get_max_traffic(self):
         traffic = 10000  # start at 10kb
@@ -189,7 +187,7 @@ class RosGraphDotcodeGenerator:
                     _conv(edge.start),
                     _conv(edge.end),
                     label=temp_label,
-                    url='topic:%s' % edge.label,
+                    url=f'topic:{edge.label}',
                     penwidth=penwidth,
                     color=color)
             else:
@@ -198,7 +196,7 @@ class RosGraphDotcodeGenerator:
                     _conv(edge.start),
                     _conv(edge.end),
                     label=edge.label,
-                    url='topic:%s' % edge.label)
+                    url=f'topic:{edge.label}')
         else:
             sub = edge.end.strip()
             topic = edge.start.strip()
@@ -318,7 +316,7 @@ class RosGraphDotcodeGenerator:
             nodename=_conv(node),
             nodelabel=label,
             shape='box',
-            url='topic:%s' % label,
+            url=f'topic:{label}',
             color=color,
             tooltip=tooltip)
 
@@ -329,7 +327,7 @@ class RosGraphDotcodeGenerator:
             nodename=_conv(node),
             nodelabel=label,
             shape='box3d',
-            url='topic:%s' % label)
+            url=f'topic:{label}')
 
     def _quiet_filter(self, name):
         # ignore viewers
