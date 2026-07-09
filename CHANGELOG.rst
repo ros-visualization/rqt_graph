@@ -2,6 +2,12 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.2 (2026-07-09)
+------------------
+* f-string, super() and python3 modernizations (`#121 <https://github.com/ros-visualization/rqt_graph/issues/121>`_)
+* Removed Python2 references and Qt6 fixes (`#120 <https://github.com/ros-visualization/rqt_graph/issues/120>`_)
+* Contributors: Alejandro Hernández Cordero
+
 2.0.1 (2026-06-17)
 ------------------
 * Removed Python2 references and Qt6 fixes (`#118 <https://github.com/ros-visualization/rqt_graph/issues/118>`_)
