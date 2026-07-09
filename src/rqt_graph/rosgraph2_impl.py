@@ -152,9 +152,9 @@ class EdgeList(object):
         # doing an update
         updated = False
         if not start:
-            qWarning('cannot add edge: cannot map start [%s] to a node name', start)
+            qWarning(f'cannot add edge: cannot map start [{start}] to a node name')
         elif not dest:
-            qWarning('cannot add edge: cannot map dest [%s] to a node name', dest)
+            qWarning(f'cannot add edge: cannot map dest [{dest}] to a node name')
         else:
             for args in edge_args(start, dest, direction, label, qos):
                 updated = self.add(Edge(*args)) or updated
@@ -198,15 +198,15 @@ class Edge(object):
         self.end = end
         self.label = label
         self.qos = qos
-        self.key = '%s|%s' % (self.start, self.label)
+        self.key = f'{self.start}|{self.label}'
         # reverse key, indexed from end
-        self.rkey = '%s|%s' % (self.end, self.label)
+        self.rkey = f'{self.end}|{self.label}'
 
     def __ne__(self, other):
         return self.start != other.start or self.end != other.end
 
     def __str__(self):
-        return '%s->%s' % (self.start, self.end)
+        return f'{self.start}->{self.end}'
 
     def __eq__(self, other):
         return self.start == other.start and self.end == other.end and \
@@ -407,13 +407,13 @@ class Graph(object):
             updated = True
 
         if purge:
-            qDebug('following nodes and related edges will be purged: %s', ','.join(purge))
+            qDebug(f"following nodes and related edges will be purged: {','.join(purge)}")
             for p in purge:
                 self.nn_edges.delete_all(p)
                 self.nt_edges.delete_all(p)
                 self.nt_all_edges.delete_all(p)
 
-        qDebug('Graph refresh: done, updated[%s]' % updated)
+        qDebug(f'Graph refresh: done, updated[{updated}]')
         return updated
 
     def _mark_bad_node(self, node, reason):
@@ -478,7 +478,7 @@ class Graph(object):
             namespace + ('' if namespace.endswith('/') else '/') + name
             for name, namespace in self._node.get_node_names_and_namespaces()}
         if node not in current_nodes:
-            qWarning('Node "{}" does not exist'.format(node))
+            qWarning(f'Node "{node}" does not exist')
             return None
         return node
 
@@ -495,7 +495,7 @@ class Graph(object):
         try:
             self.bad_nodes_lock.acquire()
             # make copy due to multithreading
-            update_queue = self.bad_nodes.values()[:]
+            update_queue = list(self.bad_nodes.values())
         finally:
             self.bad_nodes_lock.release()
 
@@ -520,7 +520,7 @@ class Graph(object):
             # small yield to keep from torquing the processor
             time.sleep(0.01)
         end_time = time.time()
-        qDebug('ROS stats (bad nodes) update took %ss' % (end_time - start_time))
+        qDebug(f'ROS stats (bad nodes) update took {end_time - start_time}s')
         return updated
 
     def update(self):
@@ -574,5 +574,5 @@ class Graph(object):
             # small yield to keep from torquing the processor
             time.sleep(0.01)
         end_time = time.time()
-        qDebug('ROS stats update took %ss' % (end_time - start_time))
+        qDebug(f'ROS stats update took {end_time - start_time}s')
         return updated

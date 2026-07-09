@@ -59,7 +59,7 @@ class RepeatedWordCompleter(QCompleter):
         path = QCompleter.pathFromIndex(self, index)
         lst = str(self.widget().text()).split(',')
         if len(lst) > 1:
-            path = '%s, %s' % (','.join(lst[:-1]), path)
+            path = f"{','.join(lst[:-1])}, {path}"
         return path
 
     def splitPath(self, path):
@@ -71,14 +71,14 @@ class NamespaceCompletionModel(QAbstractListModel):
     """Ros package and stacknames."""
 
     def __init__(self, linewidget, topics_only):
-        super(NamespaceCompletionModel, self).__init__(linewidget)
+        super().__init__(linewidget)
         self.names = []
 
     def refresh(self, names):
         namesset = set()
         for n in names:
             namesset.add(str(n).strip())
-            namesset.add('-%s' % (str(n).strip()))
+            namesset.add(f'-{str(n).strip()}')
         self.names = sorted(namesset)
 
     def rowCount(self, parent):
@@ -96,7 +96,7 @@ class RosGraph(Plugin):
     _deferred_fit_in_view = Signal()
 
     def __init__(self, context):
-        super(RosGraph, self).__init__(context)
+        super().__init__(context)
         self._node = context.node
         self._logger = self._node.get_logger().get_child('rqt_graph.ros_graph.RosGraph')
         self.initialized = False
@@ -121,7 +121,7 @@ class RosGraph(Plugin):
         self._widget.setObjectName('RosGraphUi')
         if context.serial_number() > 1:
             self._widget.setWindowTitle(
-                self._widget.windowTitle() + (' (%d)' % context.serial_number()))
+                self._widget.windowTitle() + f' ({context.serial_number()})')
 
         self._scene = QGraphicsScene()
         self._scene.setBackgroundBrush(QColorConstants.White)
@@ -328,18 +328,18 @@ class RosGraph(Plugin):
         if url is not None and ':' in url:
             item_type, item_path = url.split(':', 1)
             if item_type == 'node':
-                tool_tip = 'Node:\n  %s' % (item_path)
+                tool_tip = f'Node:\n  {item_path}'
                 service_names_and_types = self._node.get_service_names_and_types()
                 if service_names_and_types:
                     tool_tip += '\nServices:'
                     for service_name, service_type in service_names_and_types:
-                        tool_tip += '\n  %s [%s]' % (service_name, service_type)
+                        tool_tip += f'\n  {service_name} [{service_type}]'
                 return tool_tip
             elif item_type == 'topic':
                 for topic_name, topic_type in self._node.get_topic_names_and_types():
                     if topic_name in item_path:
-                        return 'Topic:\n  %s\nType:\n  %s' % (topic_name, topic_type)
-                return 'No topic with item path {}'.format(item_path)
+                        return f'Topic:\n  {topic_name}\nType:\n  {topic_type}'
+                return f'No topic with item path {item_path}'
         return url
 
     def _redraw_graph_view(self):
@@ -368,9 +368,8 @@ class RosGraph(Plugin):
                 return
 
         try:
-            fh = open(file_name, 'rb')
-            dotcode = fh.read()
-            fh.close()
+            with open(file_name, 'rb') as fh:
+                dotcode = fh.read()
         except IOError:
             return
 
