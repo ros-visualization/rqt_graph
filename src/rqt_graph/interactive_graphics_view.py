@@ -36,7 +36,7 @@ from python_qt_binding.QtWidgets import QGraphicsView
 class InteractiveGraphicsView(QGraphicsView):
 
     def __init__(self, parent=None):
-        super(InteractiveGraphicsView, self).__init__(parent)
+        super().__init__(parent)
         self.setObjectName('InteractiveGraphicsView')
 
         self.last_pan_pt = None
