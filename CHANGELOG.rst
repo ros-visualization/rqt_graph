@@ -2,6 +2,11 @@
 Changelog for package rqt_graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.3 (2026-09-04)
+------------------
+* Removed Qt5 support (`#123 <https://github.com/ros-visualization/rqt_graph/issues/123>`_)
+* Contributors: Alejandro Hernández Cordero
+
 2.0.2 (2026-07-09)
 ------------------
 * f-string, super() and python3 modernizations (`#121 <https://github.com/ros-visualization/rqt_graph/issues/121>`_)
